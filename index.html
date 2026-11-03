@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Модели практикума МИПиС</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab-notebook instrument — a compact control column next to a results canvas, one page per practical, routed by #pr1..#pr8 */
+:root {
+  --bg: #f3f5f8;
+  --paper: #ffffff;
+  --fg: #16202e;
+  --muted: #5b6777;
+  --line: #d9dee6;
+  --grid: #e7ebf0;
+  --accent: #1d4fd7;
+  --accent-soft: #e4ebfd;
+  --c1: #1d4fd7;
+  --c2: #e0662a;
+  --c3: #129b82;
+  --c4: #a23fb5;
+  --c5: #c9a10a;
+  --good: #128a5a;
+  --warn: #b7791f;
+  --bad: #c0392b;
+  --font-display: "Unbounded", "Golos Text", system-ui, sans-serif;
+  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141c; --paper: #161d28; --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3442; --grid: #222b37;
+  --accent: #7aa2ff; --accent-soft: #1d2a47; --c1: #7aa2ff; --c2: #ff9a5c; --c3: #3fd0b0; --c4: #d58ae3; --c5: #e8c547;
+  --good: #3fbf87; --warn: #e0a84a; --bad: #ef6f61; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f141c; --paper: #161d28; --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3442; --grid: #222b37;
+  --accent: #7aa2ff; --accent-soft: #1d2a47; --c1: #7aa2ff; --c2: #ff9a5c; --c3: #3fd0b0; --c4: #d58ae3; --c5: #e8c547;
+  --good: #3fbf87; --warn: #e0a84a; --bad: #ef6f61; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
+a { color: var(--accent); }
+header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+header.top .brand { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: .01em; color: var(--fg); text-decoration: none; }
+header.top .brand span { color: var(--accent); }
+header.top nav { display: flex; gap: 4px; flex-wrap: wrap; }
+header.top nav a { font-family: var(--font-mono); font-size: 13px; text-decoration: none; color: var(--muted); padding: 4px 8px; border-radius: 6px; }
+header.top nav a.on, header.top nav a:hover { color: var(--accent); background: var(--accent-soft); }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 3.2vw, 32px); line-height: 1.2; margin: 0 0 8px; text-wrap: balance; }
+h2 { font-size: 17px; font-weight: 600; margin: 0 0 10px; }
+h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+.lead { color: var(--muted); max-width: 70ch; margin: 0 0 22px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+/* home */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.card { display: flex; flex-direction: column; gap: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; text-decoration: none; color: var(--fg); transition: border-color .15s, transform .15s; }
+.card:hover, .card:focus-visible { border-color: var(--accent); transform: translateY(-2px); outline: none; }
+.card .no { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.card .t { font-weight: 600; font-size: 16px; line-height: 1.3; }
+.card .d { color: var(--muted); font-size: 13.5px; }
+.card canvas { width: 100%; height: 64px; display: block; margin-top: auto; }
+.note { margin-top: 26px; color: var(--muted); font-size: 13px; max-width: 80ch; }
+
+/* lab page */
+.lab { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .lab { grid-template-columns: minmax(0, 1fr); } }
+.panel { min-width: 0; }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.panel.controls { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 860px) { .panel.controls { position: static; } }
+.results { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 980px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+label.f > span { font-weight: 500; }
+input, select, textarea, button { font: inherit; color: var(--fg); }
+input[type=number], input[type=text], select, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; width: 100%; min-width: 0; }
+textarea { font-family: var(--font-mono); font-size: 13px; resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+button { cursor: pointer; border-radius: 7px; border: 1px solid var(--line); background: var(--paper); padding: 8px 12px; font-weight: 500; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] button.primary { color: #0f141c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.primary { color: #0f141c; } }
+button:hover { border-color: var(--accent); }
+.task { font-size: 13.5px; background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; }
+.task b { font-weight: 600; }
+.formula { font-family: var(--font-mono); font-size: 13.5px; background: var(--bg); border: 1px dashed var(--line); border-radius: 7px; padding: 8px 10px; overflow-x: auto; white-space: nowrap; }
+.chart { position: relative; height: 280px; }
+.chart.tall { height: 340px; }
+.chart.short { height: 220px; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; background: var(--bg); }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-size: 13px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.kpi { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
+.kpi .k { font-size: 12px; color: var(--muted); }
+.kpi .v { font-family: var(--font-mono); font-size: 18px; font-weight: 500; }
+.kpi .s { font-size: 12px; color: var(--muted); }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.pill.good { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+.pill.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.concl { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: 14px; }
+.small { font-size: 12.5px; color: var(--muted); }
+.mono { font-family: var(--font-mono); }
+.strip { display: flex; flex-wrap: wrap; gap: 3px; }
+.strip span { width: 18px; height: 22px; border-radius: 3px; font-family: var(--font-mono); font-size: 11px; display: grid; place-items: center; color: #fff; }
+svg text { fill: var(--fg); font-family: var(--font-body); }
+.editor td input { padding: 4px 6px; font-size: 13px; }
+#ed .editor td input { min-width: 56px; }
+#ed table.editor { min-width: 460px; }
+.editor td { padding: 3px 4px; }
+.tip { position: absolute; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; font-family: var(--font-mono); }
+.chart canvas { display: block; }
+.x { border: none; background: none; color: var(--muted); padding: 2px 6px; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#">МИПиС <span>· практикум</span></a>
+    <nav id="nav"></nav>
+  </header>
+  <main id="view"></main>
+</div>
+
+<script>
+"use strict";
+/* ============================================================ utilities */
+const $ = (s, r = document) => r.querySelector(s);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d = 4) => (x === null || x === undefined || !isFinite(x)) ? '—' : Number(x).toFixed(d).replace('.', ',');
+const fmtS = (x, d = 4) => (x === null || !isFinite(x)) ? '—' : (+x.toFixed(d)).toString().replace('.', ',');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function mulberry32(seed) { let a = seed >>> 0; return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const sum = a => a.reduce((s, x) => s + x, 0);
+const mean = a => sum(a) / a.length;
+const varPop = a => { const m = mean(a); return sum(a.map(x => (x - m) ** 2)) / a.length; };
+const varS = a => { const m = mean(a); return sum(a.map(x => (x - m) ** 2)) / (a.length - 1); };
+function quantile(sorted, q) { const p = (sorted.length - 1) * q, lo = Math.floor(p), hi = Math.ceil(p); return sorted[lo] + (sorted[hi] - sorted[lo]) * (p - lo); }
+function gammaFn(z) { if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gammaFn(1 - z)); z -= 1; const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x; }
+function lnGamma(z) { return Math.log(gammaFn(z)); }
+function betacf(a, b, x) { const MAXIT = 200, EPS = 3e-12, FPMIN = 1e-300; let qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < FPMIN) d = FPMIN; d = 1 / d; let h = d; for (let m = 1; m <= MAXIT; m++) { const m2 = 2 * m; let aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN; c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < EPS) break; } return h; }
+function ibeta(x, a, b) { if (x <= 0) return 0; if (x >= 1) return 1; const bt = Math.exp(lnGamma(a + b) - lnGamma(a) - lnGamma(b) + a * Math.log(x) + b * Math.log(1 - x)); return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b; }
+const fCdf = (f, d1, d2) => f <= 0 ? 0 : ibeta(d1 * f / (d1 * f + d2), d1 / 2, d2 / 2);
+function fCrit(alpha, d1, d2) { let lo = 0, hi = 1000; for (let i = 0; i < 200; i++) { const m = (lo + hi) / 2; if (fCdf(m, d1, d2) < 1 - alpha) lo = m; else hi = m; } return (lo + hi) / 2; }
+const tCdf = (t, df) => { const x = df / (df + t * t); const p = 0.5 * ibeta(x, df / 2, 0.5); return t > 0 ? 1 - p : p; };
+function tCrit(p, df) { let lo = 0, hi = 100; for (let i = 0; i < 200; i++) { const m = (lo + hi) / 2; if (tCdf(m, df) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+function solveLinear(A, b) { const n = b.length, M = A.map((r, i) => [...r, b[i]]); for (let c = 0; c < n; c++) { let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r; [M[c], M[p]] = [M[p], M[c]]; const v = M[c][c]; if (Math.abs(v) < 1e-14) return null; for (let k = c; k <= n; k++) M[c][k] /= v; for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c]; for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k]; } } return M.map(r => r[n]); }
+const vecMat = (v, P) => P[0].map((_, j) => v.reduce((s, vi, i) => s + vi * P[i][j], 0));
+
+
+/* ============================================================ mini chart engine (no external libraries) */
+class Chart {
+  constructor(canvas, cfg) {
+    this.cv = canvas; this.cfg = cfg; this.ctx = canvas.getContext('2d'); this.meta = [];
+    this.ro = new ResizeObserver(() => this.draw()); this.ro.observe(canvas.parentElement);
+    this.tip = document.createElement('div'); this.tip.className = 'tip'; this.tip.hidden = true; canvas.parentElement.appendChild(this.tip);
+    this.onMove = e => this.hover(e); this.onLeave = () => { this.tip.hidden = true; };
+    canvas.addEventListener('mousemove', this.onMove); canvas.addEventListener('mouseleave', this.onLeave);
+    this.draw();
+  }
+  destroy() { this.ro.disconnect(); this.cv.removeEventListener('mousemove', this.onMove); this.cv.removeEventListener('mouseleave', this.onLeave); this.tip.remove(); }
+  static niceTicks(lo, hi, n = 6) {
+    if (!isFinite(lo) || !isFinite(hi)) { lo = 0; hi = 1; } if (hi - lo < 1e-12) { hi = lo + 1; lo = lo - (lo === 0 ? 0 : 1); }
+    const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag; const step = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+    const a = Math.floor(lo / step + 1e-9) * step, b = Math.ceil(hi / step - 1e-9) * step, t = []; for (let v = a; v <= b + step / 2; v += step) t.push(+v.toFixed(12)); return { min: a, max: b, ticks: t, step };
+  }
+  static tickLabel(v, step) { const d = step >= 1 ? 0 : Math.min(6, Math.ceil(-Math.log10(step))); return v.toFixed(d).replace('.', ','); }
+  draw() {
+    const cv = this.cv, par = cv.parentElement, dpr = window.devicePixelRatio || 1; const W = par.clientWidth, H = par.clientHeight; if (!W || !H) return;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const c = this.ctx; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
+    const cfg = this.cfg, o = cfg.options || {}, sc = o.scales || {}, P = palette(), FONT = "'Golos Text', system-ui, sans-serif", MONO = "'JetBrains Mono', monospace";
+    const sets = cfg.data.datasets, labels = cfg.data.labels, horiz = o.indexAxis === 'y';
+    const categorical = !!labels && cfg.type !== 'scatter';
+    // legend
+    let top = 6; const showLegend = !(o.plugins && o.plugins.legend && o.plugins.legend.display === false) && sets.some(d => d.label);
+    this.legendBoxes = [];
+    if (showLegend) { c.font = `12px ${FONT}`; let x = 8, y = 8; for (const d of sets) { if (!d.label) continue; const w = c.measureText(d.label).width + 24; if (x + w > W - 8) { x = 8; y += 18; } const col = d.borderColor && d.type === 'line' || cfg.type === 'line' || (cfg.type === 'scatter' && d.showLine) ? d.borderColor : (Array.isArray(d.backgroundColor) ? d.backgroundColor[0] : d.backgroundColor || d.borderColor); c.fillStyle = col || P.c[0]; c.fillRect(x, y + 2, 12, 10); c.fillStyle = P.fg; c.textBaseline = 'top'; c.fillText(d.label, x + 16, y); x += w + 6; } top = y + 24; }
+    // scales
+    const xs = sc.x || {}, ys = sc.y || {};
+    const valAxis = horiz ? xs : ys;
+    let vmin = Infinity, vmax = -Infinity, xmin = Infinity, xmax = -Infinity;
+    for (const d of sets) for (const p of d.data) {
+      if (p === null || p === undefined) continue;
+      if (horiz) { const [a, b] = p.x; vmin = Math.min(vmin, a, b); vmax = Math.max(vmax, a, b); }
+      else if (categorical) { if (isFinite(p)) { vmin = Math.min(vmin, p); vmax = Math.max(vmax, p); } }
+      else { if (isFinite(p.y)) { vmin = Math.min(vmin, p.y); vmax = Math.max(vmax, p.y); } if (isFinite(p.x)) { xmin = Math.min(xmin, p.x); xmax = Math.max(xmax, p.x); } }
+    }
+    const lin = (ax, lo, hi) => { if (ax.beginAtZero || cfg.type === 'bar' && !horiz && ax === ys) lo = Math.min(0, lo); if (ax.min !== undefined) lo = ax.min; if (ax.max !== undefined) hi = ax.max; const nt = Chart.niceTicks(lo, hi, ax === ys ? 5 : 7); return { min: ax.min !== undefined ? ax.min : nt.min, max: ax.max !== undefined ? ax.max : nt.max, ticks: nt.ticks, step: ax.ticks && ax.ticks.stepSize || nt.step }; };
+    const Y = horiz ? null : lin(ys, vmin, vmax); const X = horiz ? lin(xs, vmin, vmax) : (categorical ? null : lin(xs, xmin, xmax));
+    if (Y && ys.ticks && ys.ticks.stepSize) { Y.ticks = []; for (let v = Math.ceil(Y.min / ys.ticks.stepSize) * ys.ticks.stepSize; v <= Y.max + 1e-9; v += ys.ticks.stepSize) Y.ticks.push(+v.toFixed(9)); }
+    if (X && xs.ticks && xs.ticks.stepSize) { X.ticks = []; for (let v = Math.ceil(X.min / xs.ticks.stepSize) * xs.ticks.stepSize; v <= X.max + 1e-9; v += xs.ticks.stepSize) X.ticks.push(+v.toFixed(9)); }
+    c.font = `11px ${MONO}`;
+    const yLabelOf = v => ys.ticks && ys.ticks.callback ? ys.ticks.callback(v) : (ys.ticks && ys.ticks.precision === 0 && !Number.isInteger(v) ? '' : Chart.tickLabel(v, Y.step));
+    const xLabelOf = v => xs.ticks && xs.ticks.callback ? xs.ticks.callback(v) : (xs.ticks && xs.ticks.precision === 0 && !Number.isInteger(v) ? '' : Chart.tickLabel(v, X.step));
+    let left = 10; if (ys.display !== false) { if (horiz) { c.font = `12px ${FONT}`; left = 12 + Math.max(...labels.map(l => c.measureText(l).width)); } else left = 14 + Math.max(...Y.ticks.map(v => c.measureText(yLabelOf(v)).width)); if (ys.title) left += 16; }
+    const bottom = H - 22 - (xs.title ? 16 : 0), right = W - 10, plotT = top + 4;
+    const pw = right - left, ph = bottom - plotT; if (pw < 20 || ph < 20) return;
+    const sx = v => left + (v - X.min) / (X.max - X.min) * pw, sy = v => bottom - (v - Y.min) / (Y.max - Y.min) * ph;
+    const n = categorical ? labels.length : 0, band = horiz ? ph / n : pw / Math.max(1, n);
+    const cx = i => left + band * (i + .5), cyH = i => plotT + band * (i + .5);
+    // grid + ticks
+    c.strokeStyle = P.grid; c.lineWidth = 1; c.fillStyle = P.muted; c.font = `11px ${MONO}`;
+    if (Y) { c.textAlign = 'right'; c.textBaseline = 'middle'; for (const v of Y.ticks) { if (v < Y.min - 1e-9 || v > Y.max + 1e-9) continue; const y = Math.round(sy(v)) + .5; c.beginPath(); c.moveTo(left, y); c.lineTo(right, y); c.stroke(); if (ys.display !== false) c.fillText(yLabelOf(v), left - 6, y); } }
+    if (X) { c.textAlign = 'center'; c.textBaseline = 'top'; let lastX = -1e9; for (const v of X.ticks) { if (v < X.min - 1e-9 || v > X.max + 1e-9) continue; const x = Math.round(sx(v)) + .5; c.beginPath(); c.moveTo(x, plotT); c.lineTo(x, bottom); c.stroke(); const t = xLabelOf(v); const w = c.measureText(t).width; if (x - w / 2 > lastX + 4) { c.fillText(t, x, bottom + 5); lastX = x + w / 2; } } }
+    if (categorical && !horiz) { c.textAlign = 'center'; c.textBaseline = 'top'; c.font = `11px ${MONO}`; const maxW = Math.max(...labels.map(l => c.measureText(String(l)).width)) + 6; const every = Math.max(1, Math.ceil(maxW / band)); labels.forEach((l, i) => { if (i % every === 0) c.fillText(String(l), cx(i), bottom + 5); }); }
+    if (horiz) { c.textAlign = 'right'; c.textBaseline = 'middle'; c.font = `12px ${FONT}`; c.fillStyle = P.fg; labels.forEach((l, i) => c.fillText(l, left - 8, cyH(i))); }
+    c.strokeStyle = P.line; c.beginPath(); c.moveTo(left, plotT); c.lineTo(left, bottom); c.lineTo(right, bottom); c.stroke();
+    c.fillStyle = P.muted; c.font = `12px ${FONT}`;
+    if (xs.title && xs.title.text) { c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillText(xs.title.text, left + pw / 2, H - 2); }
+    if (ys.title && ys.title.text && ys.display !== false) { c.save(); c.translate(12, plotT + ph / 2); c.rotate(-Math.PI / 2); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(ys.title.text, 0, 0); c.restore(); }
+    // clip plot area
+    c.save(); c.beginPath(); c.rect(left - 6, plotT - 6, pw + 12, ph + 12); c.clip();
+    this.meta = []; this.hits = [];
+    const bars = sets.filter(d => (d.type || cfg.type) === 'bar'); const nb = bars.length;
+    sets.forEach((d, di) => {
+      const type = d.type || cfg.type; const meta = { data: [] }; this.meta[di] = meta;
+      const col = i => Array.isArray(d.backgroundColor) ? d.backgroundColor[i] : (d.backgroundColor || P.c[di % 5]);
+      if (type === 'bar' && horiz) {
+        const bh = band * (d.categoryPercentage ?? .9) * (d.barPercentage ?? .7);
+        d.data.forEach((p, i) => { const yi = labels.indexOf(p.y); const y = cyH(yi); const x0 = sx(Math.min(...p.x)), x1 = sx(Math.max(...p.x)); c.fillStyle = col(i); rr(c, x0, y - bh / 2, Math.max(1, x1 - x0), bh, d.borderRadius || 0); c.fill(); meta.data.push({ x: x1, base: x0, y, width: x1 - x0 }); this.hits.push({ x0, x1, y0: y - bh / 2, y1: y + bh / 2, t: `${p.s}: ${fmtS(p.x[0], 2)} – ${fmtS(p.x[1], 2)}` }); });
+      } else if (type === 'bar') {
+        const k = bars.indexOf(d); const full = band * (d.categoryPercentage ?? .8); const bw = full / nb * (d.barPercentage ?? .9);
+        d.data.forEach((v, i) => { if (v === null || !isFinite(v)) return; const x = cx(i) - full / 2 + (k + .5) * full / nb - bw / 2; const y0 = sy(Math.max(Y.min, 0)), y1 = sy(v); c.fillStyle = col(i); c.fillRect(x, Math.min(y0, y1), bw, Math.abs(y0 - y1)); if (d.borderColor && d.borderWidth) { c.strokeStyle = d.borderColor; c.lineWidth = d.borderWidth; c.strokeRect(x + .5, Math.min(y0, y1) + .5, bw - 1, Math.abs(y0 - y1)); } this.hits.push({ x0: x, x1: x + bw, y0: Math.min(y0, y1) - 4, y1: Math.max(y0, y1), t: `${d.label ? d.label + ': ' : ''}${labels[i]} → ${fmtS(v, 4)}` }); });
+      } else {
+        const pts = categorical ? d.data.map((v, i) => ({ px: cx(i), py: v === null || !isFinite(v) ? NaN : sy(v), v, lab: labels[i] })) : d.data.map(p => ({ px: sx(p.x), py: sy(p.y), v: p.y, lab: p.x }));
+        const drawLine = type === 'line' || d.showLine;
+        if (drawLine) { c.strokeStyle = d.borderColor || P.c[di % 5]; c.lineWidth = d.borderWidth || 2; c.setLineDash(d.borderDash || []); c.beginPath(); let pen = false, prev = null;
+          for (const p of pts) { if (!isFinite(p.px) || !isFinite(p.py)) { pen = false; prev = null; continue; } if (!pen) { c.moveTo(p.px, p.py); pen = true; } else if (d.stepped) { c.lineTo(p.px, prev.py); c.lineTo(p.px, p.py); } else c.lineTo(p.px, p.py); prev = p; }
+          if (d.fill) { c.closePath(); c.fillStyle = d.backgroundColor; c.fill(); } c.stroke(); c.setLineDash([]); }
+        pts.forEach((p, i) => { const r = Array.isArray(d.pointRadius) ? d.pointRadius[i] : (d.pointRadius ?? (drawLine ? 0 : 3)); if (!(r > 0) || !isFinite(p.px) || !isFinite(p.py)) return; const pc = d.pointBackgroundColor || (drawLine ? d.borderColor : col(i)) || P.c[di % 5];
+          if (d.pointStyle === 'line') { c.strokeStyle = d.borderColor || pc; c.lineWidth = d.borderWidth || 3; c.beginPath(); c.moveTo(p.px - r * 1.6, p.py); c.lineTo(p.px + r * 1.6, p.py); c.stroke(); }
+          else if (d.pointStyle === 'crossRot') { c.strokeStyle = d.borderColor || pc; c.lineWidth = 2; c.beginPath(); c.moveTo(p.px - r, p.py - r); c.lineTo(p.px + r, p.py + r); c.moveTo(p.px + r, p.py - r); c.lineTo(p.px - r, p.py + r); c.stroke(); }
+          else { c.fillStyle = pc; c.beginPath(); c.arc(p.px, p.py, r, 0, Math.PI * 2); c.fill(); } });
+        if (d.label && !d.fill) pts.forEach(p => { if (isFinite(p.px) && isFinite(p.py)) this.hits.push({ x0: p.px - 5, x1: p.px + 5, y0: p.py - 5, y1: p.py + 5, t: `${d.label}: ${typeof p.lab === 'number' ? fmtS(p.lab, 3) : p.lab} → ${fmtS(p.v, 4)}` }); });
+      }
+    });
+    c.restore();
+    const self = { ctx: c, getDatasetMeta: i => this.meta[i] };
+    (cfg.plugins || []).forEach(pl => pl.afterDatasetsDraw && pl.afterDatasetsDraw(self));
+  }
+  hover(e) { const r = this.cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; const h = (this.hits || []).find(b => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1);
+    if (!h) { this.tip.hidden = true; return; } this.tip.textContent = h.t; this.tip.hidden = false; const pw = this.cv.parentElement.clientWidth; this.tip.style.left = Math.min(x + 12, pw - this.tip.offsetWidth - 4) + 'px'; this.tip.style.top = Math.max(0, y - 30) + 'px'; }
+}
+function rr(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+
+/* ============================================================ charts */
+const charts = {};
+function palette() { return { fg: css('--fg'), muted: css('--muted'), grid: css('--grid'), line: css('--line'), c: [css('--c1'), css('--c2'), css('--c3'), css('--c4'), css('--c5')], paper: css('--paper'), bg: css('--bg') }; }
+function chart(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  const cv = document.getElementById(id); if (!cv) return;
+  const P = palette();
+  const base = { responsive: true, maintainAspectRatio: false, animation: { duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300 },
+    plugins: { legend: { labels: { color: P.fg, boxWidth: 12, font: { family: 'Golos Text' } } }, tooltip: { mode: 'nearest', intersect: false } },
+    scales: {} };
+  cfg.options = Object.assign(base, cfg.options || {});
+  for (const ax of Object.values(cfg.options.scales)) { ax.ticks = Object.assign({ color: P.muted, font: { family: 'JetBrains Mono', size: 11 } }, ax.ticks || {}); ax.grid = Object.assign({ color: P.grid }, ax.grid || {}); if (ax.title) ax.title = Object.assign({ color: P.muted, display: true }, ax.title); }
+  charts[id] = new Chart(cv, cfg);
+}
+function alpha(c, a) { return `color-mix(in srgb, ${c} ${Math.round(a * 100)}%, transparent)`; }
+function hexA(c, a) { // Chart.js does not parse color-mix
+  const ctx = document.createElement('canvas').getContext('2d'); ctx.fillStyle = c; const h = ctx.fillStyle; if (h.startsWith('#')) { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; } return h; }
+
+/* histogram helper */
+function hist(data, bins, lo, hi) { lo = lo ?? Math.min(...data); hi = hi ?? Math.max(...data); if (hi === lo) hi = lo + 1; const w = (hi - lo) / bins, c = new Array(bins).fill(0); for (const x of data) { let k = Math.floor((x - lo) / w); if (k >= bins) k = bins - 1; if (k < 0) k = 0; c[k]++; } return { lo, hi, w, c, mids: c.map((_, i) => lo + (i + .5) * w) }; }
+
+/* ============================================================ state graph (SVG) */
+function stateGraph(states, M, opts = {}) {
+  const n = states.length, W = 420, H = n === 2 ? 200 : 362, R = 34, P = palette();
+  const pos = n === 2 ? [[110, 120], [310, 120]] : [[210, 98], [90, 266], [330, 266]];
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" role="img" aria-label="Граф переходов">`;
+  s += `<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${P.muted}"/></marker></defs>`;
+  const lbl = v => opts.rate ? fmtS(v, 3) : fmtS(v, 2);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const v = M[i][j]; if (i === j || !(v > 0)) continue;
+    const [x1, y1] = pos[i], [x2, y2] = pos[j]; const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+    const nx = -uy, ny = ux, off = 14;
+    const sx = x1 + ux * R + nx * off, sy = y1 + uy * R + ny * off, ex = x2 - ux * R + nx * off, ey = y2 - uy * R + ny * off;
+    const cx = (sx + ex) / 2 + nx * 18, cy = (sy + ey) / 2 + ny * 18;
+    s += `<path d="M${sx},${sy} Q${cx},${cy} ${ex},${ey}" fill="none" stroke="${P.muted}" stroke-width="1.4" marker-end="url(#ah)"/>`;
+    s += `<text x="${cx + nx * 4}" y="${cy + ny * 4 + 4}" font-size="12" text-anchor="middle">${lbl(v)}</text>`;
+  }
+  if (!opts.rate) for (let i = 0; i < n; i++) { const v = M[i][i]; if (!(v > 0)) continue; const [x, y] = pos[i]; const up = n === 2 || i === 0 ? -1 : 1; const yy = y + up * R;
+    s += `<path d="M${x - 12},${yy} C${x - 30},${yy + up * 46} ${x + 30},${yy + up * 46} ${x + 12},${yy}" fill="none" stroke="${P.muted}" stroke-width="1.4" marker-end="url(#ah)"/>`;
+    s += `<text x="${x}" y="${yy + up * 44 + (up > 0 ? 10 : 0)}" font-size="12" text-anchor="middle">${lbl(v)}</text>`; }
+  states.forEach((st, i) => { const [x, y] = pos[i]; s += `<circle cx="${x}" cy="${y}" r="${R}" fill="${P.paper}" stroke="${P.c[i]}" stroke-width="2.5"/>`;
+    const words = st.length > 11 ? st.split(/\s+/) : [st]; words.slice(0, 2).forEach((w, k) => s += `<text x="${x}" y="${y + 4 + (k - (Math.min(words.length, 2) - 1) / 2) * 13}" font-size="11.5" text-anchor="middle" font-weight="600">${esc(w)}</text>`); });
+  return s + '</svg>';
+}
+
+/* ============================================================ data from МУ */
+const PR = [
+  { id: 'pr1', no: 1, t: 'Методы моделирования базовой последовательности псевдослучайных чисел', d: 'Метод середины квадратов и линейный конгруэнтный генератор: период, среднее, дисперсия, гистограмма, пары (Uₙ, Uₙ₊₁).' },
+  { id: 'pr2', no: 2, t: 'Моделирование случайных чисел с заданным законом. Метод инверсии', d: 'Преобразование X = F⁻¹(U) для шести законов распределения и сравнение с теоретическими характеристиками.' },
+  { id: 'pr3', no: 3, t: 'Статистическая обработка данных эксперимента', d: 'Среднее, медиана, дисперсия, коэффициент вариации, доверительный интервал, гистограмма и диаграмма размаха.' },
+  { id: 'pr4', no: 4, t: 'Марковские цепи с дискретным временем', d: 'Матрица P, распределения π₁, π₂, π₅, π₁₀, стационарное распределение и имитация траектории.' },
+  { id: 'pr5', no: 5, t: 'Марковские цепи с непрерывным временем', d: 'Матрица интенсивностей Q, время пребывания, имитация по алгоритму Гиллеспи и сравнение долей времени с теорией.' },
+  { id: 'pr6', no: 6, t: 'Применение марковских цепей для моделирования СМО', d: 'M/M/c и M/M/c/K: P₀, L, Lq, W, вероятность отказа — расчёт по формулам и имитация процесса гибели и размножения.' },
+  { id: 'pr7', no: 7, t: 'Построение временной диаграммы', d: 'Диаграмма Ганта по таблице интервалов или по смоделированной очереди: ожидание, обслуживание, простой.' },
+  { id: 'pr8', no: 8, t: 'Обработка результатов однофакторного эксперимента', d: 'Групповые средние, SS, df, MS, F-критерий Фишера и вывод о влиянии фактора на уровне α = 0,05.' },
+];
+const V1 = [[3,5,1,16,12],[7,5,3,16,12],[2,9,1,16,12],[11,5,1,16,12],[4,13,1,16,12],[6,5,3,16,12],[9,9,1,16,12],[12,5,1,16,12],[1,13,3,16,12],[8,5,3,16,12],[5,7,3,32,16],[13,5,1,32,16],[17,13,1,32,16],[21,9,3,32,16],[25,5,7,32,16],[7,13,5,32,16],[11,9,1,32,16],[19,5,3,32,16],[23,13,1,32,16],[29,5,1,32,16]];
+const V2 = [['exp',{l:0.2}],['exp',{l:0.4}],['exp',{l:0.8}],['exp',{l:1.2}],['pow',{a:5,k:2}],['pow',{a:8,k:2}],['pow',{a:6,k:3}],['pow',{a:10,k:3}],['pow',{a:7,k:4}],['pow',{a:12,k:4}],['wei',{l:2,k:2}],['wei',{l:3,k:2}],['wei',{l:2,k:3}],['par',{xm:1,al:2}],['par',{xm:2,al:3}],['par',{xm:3,al:4}],['uni',{a:2,b:8}],['uni',{a:5,b:15}],['sexp',{a:2,l:0.5}],['sexp',{a:5,l:0.25}]];
+const V3 = [['Время выполнения операции, с','46.8, 48.1, 47.5, 49.0, 48.7, 47.2, 46.9, 49.4, 48.3, 47.8, 48.9, 46.5, 47.6, 48.2, 49.1'],['Температура технологического процесса, °C','72.4, 73.1, 71.9, 72.8, 73.5, 72.6, 71.7, 73.0, 72.2, 74.1, 73.3, 72.0, 71.8, 72.7, 73.6'],['Расход материала, кг','15.2, 14.9, 15.5, 15.1, 14.8, 15.6, 15.3, 15.0, 14.7, 15.4, 15.2, 14.9, 15.7, 15.1, 15.3'],['Производительность участка, ед./ч','118, 121, 119, 123, 120, 117, 122, 124, 119, 120, 121, 118, 125, 122, 120'],['Время ожидания заявки, мин','6.4, 7.1, 6.8, 7.5, 6.9, 7.2, 6.6, 7.8, 7.0, 6.7, 7.3, 6.5, 7.6, 7.1, 6.9'],['Длина детали, мм','100.2, 99.8, 100.5, 100.1, 99.9, 100.4, 100.0, 100.3, 99.7, 100.6, 100.2, 99.8, 100.1, 100.4, 100.0'],['Уровень шума, дБ','63.5, 64.2, 62.9, 63.8, 64.5, 63.1, 62.7, 64.0, 63.6, 65.1, 64.3, 63.4, 62.8, 63.9, 64.1'],['Потребление энергии, кВт·ч','28.4, 29.1, 28.7, 29.5, 28.9, 29.2, 28.3, 29.8, 28.6, 29.0, 29.4, 28.5, 29.7, 29.1, 28.8'],['Скорость обработки данных, МБ/с','82.1, 84.3, 83.5, 85.0, 82.8, 84.6, 83.1, 85.4, 84.0, 83.7, 82.9, 84.8, 83.3, 85.2, 84.1'],['Количество обслуженных клиентов','31, 34, 32, 35, 33, 30, 36, 34, 32, 33, 35, 31, 37, 34, 33'],['Содержание примеси, %','2.1, 2.4, 2.3, 2.0, 2.5, 2.2, 2.1, 2.6, 2.3, 2.4, 2.2, 2.0, 2.5, 2.3, 2.1'],['Время реакции системы, мс','145, 151, 148, 153, 147, 150, 146, 155, 149, 152, 148, 144, 154, 151, 147'],['Давление в системе, кПа','204, 207, 205, 209, 206, 203, 208, 210, 205, 207, 206, 204, 211, 208, 205'],['Частота ошибок, %','1.8, 2.1, 2.0, 1.9, 2.3, 2.2, 1.7, 2.4, 2.0, 2.1, 1.9, 1.8, 2.2, 2.0, 2.3'],['Плотность материала, г/см³','7.82, 7.85, 7.80, 7.83, 7.86, 7.81, 7.84, 7.87, 7.82, 7.85, 7.83, 7.80, 7.86, 7.84, 7.81'],['Влажность сырья, %','12.4, 12.9, 12.6, 13.1, 12.7, 12.5, 13.0, 12.8, 12.6, 13.2, 12.9, 12.4, 13.1, 12.7, 12.8'],['Скорость потока, л/мин','18.5, 19.1, 18.8, 19.4, 18.7, 19.0, 18.6, 19.5, 18.9, 19.2, 18.8, 18.4, 19.3, 19.1, 18.7'],['Количество дефектов, шт.','4, 5, 3, 6, 4, 5, 4, 7, 3, 5, 6, 4, 5, 3, 6'],['Коэффициент загрузки оборудования','0.71, 0.74, 0.73, 0.76, 0.72, 0.75, 0.70, 0.77, 0.73, 0.74, 0.72, 0.71, 0.76, 0.75, 0.73'],['Отклонение размера, мкм','8.2, 7.9, 8.5, 8.1, 7.8, 8.6, 8.3, 8.0, 7.7, 8.4, 8.2, 7.9, 8.7, 8.1, 8.3']];
+const V4 = [['Погода','Солнечно;Облачно;Дождь',[[.70,.20,.10],[.30,.50,.20],[.20,.30,.50]],[1,0,0]],['Погода','Солнечно;Облачно;Дождь',[[.60,.30,.10],[.25,.55,.20],[.15,.35,.50]],[0,1,0]],['Состояние оборудования','Исправно;Требует контроля;Отказ',[[.80,.15,.05],[.40,.45,.15],[.30,.30,.40]],[1,0,0]],['Состояние оборудования','Исправно;Ремонт;Отказ',[[.75,.20,.05],[.50,.40,.10],[.60,.25,.15]],[1,0,0]],['Клиенты сервиса','Новый;Активный;Ушёл',[[.20,.65,.15],[.05,.80,.15],[0,0,1]],[1,0,0]],['Клиенты сервиса','Активный;Пассивный;Ушёл',[[.70,.20,.10],[.25,.50,.25],[0,0,1]],[1,0,0]],['Учебная активность','Высокая;Средняя;Низкая',[[.65,.30,.05],[.20,.60,.20],[.10,.35,.55]],[0,1,0]],['Учебная активность','Высокая;Средняя;Низкая',[[.70,.25,.05],[.25,.55,.20],[.15,.30,.55]],[1,0,0]],['Очередь заявок','Мало;Средне;Много',[[.60,.30,.10],[.25,.50,.25],[.10,.35,.55]],[1,0,0]],['Очередь заявок','Мало;Средне;Много',[[.55,.35,.10],[.20,.60,.20],[.10,.40,.50]],[0,1,0]],['Качество продукции','Норма;Предупреждение;Брак',[[.85,.12,.03],[.35,.50,.15],[.20,.30,.50]],[1,0,0]],['Качество продукции','Норма;Предупреждение;Брак',[[.80,.15,.05],[.30,.55,.15],[.25,.25,.50]],[1,0,0]],['Посещаемость сайта','Высокая;Средняя;Низкая',[[.70,.25,.05],[.20,.60,.20],[.10,.30,.60]],[0,0,1]],['Посещаемость сайта','Высокая;Средняя;Низкая',[[.60,.30,.10],[.25,.55,.20],[.15,.35,.50]],[0,1,0]],['Спрос на товар','Высокий;Средний;Низкий',[[.65,.25,.10],[.20,.60,.20],[.10,.30,.60]],[1,0,0]],['Спрос на товар','Высокий;Средний;Низкий',[[.55,.35,.10],[.25,.50,.25],[.15,.35,.50]],[0,1,0]],['Состояние сети','Норма;Перегрузка;Сбой',[[.78,.17,.05],[.35,.50,.15],[.45,.25,.30]],[1,0,0]],['Состояние сети','Норма;Перегрузка;Сбой',[[.75,.20,.05],[.30,.55,.15],[.40,.30,.30]],[1,0,0]],['Финансовое состояние','Рост;Стабильно;Спад',[[.60,.30,.10],[.25,.55,.20],[.15,.35,.50]],[0,1,0]],['Финансовое состояние','Рост;Стабильно;Спад',[[.55,.35,.10],[.20,.60,.20],[.10,.40,.50]],[1,0,0]]];
+const V5 = [['Работает;Ремонт',{l:.10,m:.40}],['Работает;Ремонт',{l:.20,m:.50}],['Свободен;Занят',{l:.60,m:.90}],['Онлайн;Офлайн',{l:.30,m:.70}],['Низкая;Средняя;Высокая нагрузка',{q01:.4,q10:.3,q12:.2,q21:.5}],['Ожидание;Обслуживание;Завершение',{q01:.7,q12:.5,q20:.2}],['Исправен;Изношен;Ремонт',{q01:.2,q12:.4,q20:.6}],['Активен;Пауза;Уход',{q01:.5,q10:.4,q12:.3,q20:.2}],['Свободен;Занят;Перегружен',{q01:.8,q10:.7,q12:.3,q21:.6}],['Ясно;Облачно;Дождь',{q01:.2,q10:.3,q12:.2,q21:.4}],['Включен;Выключен',{l:.25,m:.75}],['Доступен;Недоступен',{l:.15,m:.60}],['Нормальный;Предупреждение;Авария',{q01:.1,q10:.4,q12:.2,q21:.7}],['Мало заявок;Норма;Пик',{q01:.5,q10:.4,q12:.5,q21:.8}],['Склад пуст;Есть товар',{l:.35,m:.65}],['Холодно;Норма;Перегрев',{q01:.3,q10:.2,q12:.3,q21:.6}],['Канал свободен;Канал занят',{l:.90,m:1.20}],['Сон;Активность;Отдых',{q01:.4,q10:.2,q12:.5,q21:.3}],['Система исправна;Отказ',{l:.05,m:.30}],['Подготовка;Работа;Проверка',{q01:.6,q12:.4,q20:.5}]];
+const V6 = [['M/M/1: касса магазина',3,5,1,0],['M/M/1: банк',4,6,1,0],['M/M/1: пункт выдачи',5,8,1,0],['M/M/1: техподдержка',2,4,1,0],['M/M/1/K: парковка',6,7,1,10],['M/M/1/K: склад заявок',5,6,1,8],['M/M/2: call-центр',8,5,2,0],['M/M/2: две кассы',7,4,2,0],['M/M/3: регистратура',10,4,3,0],['M/M/3: серверы обработки',12,5,3,0],['M/M/1: автомойка',2,3,1,0],['M/M/1/K: ограниченная очередь',9,10,1,6],['M/M/2/K: сервисный центр',8,5,2,12],['M/M/2/K: медицинский кабинет',6,4,2,9],['M/M/1: оператор связи',3,7,1,0],['M/M/3: аэропорт',14,6,3,0],['M/M/1/K: буфер сети',15,18,1,20],['M/M/2: онлайн-консультанты',9,6,2,0],['M/M/1: ремонтный пост',1,2,1,0],['M/M/4: диспетчерская служба',16,5,4,0]];
+const V7 = [['Обслуживание 3 клиентов у одного кассира','прибытие, ожидание, обслуживание, уход'],['Работа двух кассиров в магазине','занятость кассиров и ожидание клиентов'],['Расписание учебного дня студента','пары, перерывы, дорога, самостоятельная работа'],['Производственная линия из трёх операций','обработка деталей на станках'],['Передача файла по сети','отправка, ожидание, передача, подтверждение'],['Работа процессора с тремя задачами','выполнение, ожидание, переключение'],['Процесс ремонта оборудования','диагностика, ремонт, проверка'],['Работа call-центра','звонок, очередь, разговор, завершение'],['Пункт выдачи заказов','приход клиента, поиск заказа, выдача'],['Загрузка веб-страницы','запрос, ответ сервера, загрузка ресурсов'],['Путь пассажира на вокзале','покупка билета, ожидание, посадка'],['Работа медицинской регистратуры','очередь, оформление, приём'],['Автомойка','ожидание, мойка, сушка, оплата'],['Работа склада','приём товара, сортировка, хранение, выдача'],['Обслуживание банкомата','работа, простой, пополнение наличных'],['Тестирование программы','запуск, выполнение тестов, анализ ошибок'],['Приготовление блюда','подготовка, готовка, подача'],['Работа автобуса на маршруте','остановки, движение, ожидание'],['Сборка заказа в интернет-магазине','комплектация, упаковка, доставка'],['Проектная работа группы','планирование, разработка, проверка, сдача']];
+const V8 = [['Температура обработки','Прочность материала'],['Метод обучения','Результат теста'],['Тип удобрения','Рост растения'],['Скорость станка','Количество дефектов'],['Время рекламы','Количество просмотров'],['Тип упаковки','Срок хранения'],['Марка топлива','Расход автомобиля'],['Режим тренировки','Выносливость'],['Тип алгоритма','Время выполнения программы'],['Количество потоков','Производительность сервера'],['Способ доставки','Время доставки'],['Настройка фильтра','Качество изображения'],['Тип освещения','Утомляемость глаз'],['Метод охлаждения','Температура процессора'],['Доза реагента','Скорость реакции'],['Тип интерфейса','Скорость выполнения задания'],['Режим полива','Урожайность'],['Формат лекции','Успеваемость студентов'],['Тип маршрута','Время поездки'],['Размер партии','Себестоимость продукции']];
+const variantOptions = n => Array.from({ length: n }, (_, i) => `<option value="${i}">Вариант ${i + 1}</option>`).join('');
+
+/* ============================================================ layout helpers */
+function page(p, controls, results) {
+  return `<div class="eyebrow">Практическая работа № ${p.no}</div><h1>${p.t}</h1><p class="lead">${p.d}</p>
+  <div class="lab"><aside class="panel controls">${controls}</aside><section class="results">${results}</section></div>`;
+}
+const kpi = (k, v, s = '') => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+const num = id => parseFloat(String($('#' + id).value).replace(',', '.'));
+
+/* ============================================================ PR1 */
+function pr1() {
+  const p = PR[0];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 3)</span><select id="v">${variantOptions(20)}</select></label>
+    <label class="f"><span>Метод</span><select id="meth"><option value="lcg">Линейный конгруэнтный (LCG)</option><option value="ms">Середина квадратов</option></select></label>
+    <div id="lcgp" class="grid2">
+      <label class="f"><span>X₀ (seed)</span><input id="x0" type="number"></label>
+      <label class="f"><span>a</span><input id="a" type="number"></label>
+      <label class="f"><span>c</span><input id="c" type="number"></label>
+      <label class="f"><span>m</span><input id="m" type="number"></label>
+    </div>
+    <div id="msp" hidden><label class="f"><span>Начальное четырёхзначное X₀</span><input id="ms0" type="number" value="5735"></label></div>
+    <label class="f"><span>Объём выборки N</span><input id="n" type="number" value="1000" min="10" max="100000"></label>
+    <div class="btns"><button class="primary" id="run">Сгенерировать</button><button id="big">Большой LCG (m = 2³²)</button></div>
+    <div class="formula" id="form"></div>
+    <p class="small">Uₙ = Xₙ / m — нормированные значения на [0; 1). Для равномерного закона теоретически M = 0,5, D = 1/12 ≈ 0,0833.</p>`,
+    `<div class="panel"><h2>Последовательность по шагам</h2><div class="tbl" id="steps"></div></div>
+     <div class="panel"><div class="kpis" id="k"></div><div class="concl" id="concl"></div></div>
+     <div class="row2"><div class="panel"><h3>Гистограмма, 10 интервалов</h3><div class="chart"><canvas id="h"></canvas></div></div>
+     <div class="panel"><h3>Соседние пары (Uₙ, Uₙ₊₁)</h3><div class="chart"><canvas id="sc"></canvas></div></div></div>`);
+  const setV = () => { const [x0, a, c, m, s] = V1[+$('#v').value]; $('#x0').value = x0; $('#a').value = a; $('#c').value = c; $('#m').value = m; $('#v').dataset.steps = s; };
+  $('#v').onchange = () => { $('#meth').value = 'lcg'; toggle(); setV(); run(); };
+  const toggle = () => { const ms = $('#meth').value === 'ms'; $('#lcgp').hidden = ms; $('#msp').hidden = !ms; };
+  $('#meth').onchange = () => { toggle(); run(); };
+  $('#big').onclick = () => { $('#meth').value = 'lcg'; toggle(); $('#x0').value = 12345; $('#a').value = 1664525; $('#c').value = 1013904223; $('#m').value = 4294967296; $('#v').dataset.steps = 15; run(); };
+  $('#run').onclick = run;
+  function run() {
+    const N = Math.max(10, Math.min(100000, Math.round(num('n')) || 1000)), ms = $('#meth').value === 'ms';
+    const steps = +($('#v').dataset.steps || 12);
+    let X = [], U = [], rows = [];
+    if (!ms) {
+      const a = Math.round(num('a')), c = Math.round(num('c')), m = Math.round(num('m')); let x = Math.round(num('x0'));
+      $('#form').textContent = `Xₙ₊₁ = (${a}·Xₙ + ${c}) mod ${m}`;
+      for (let i = 0; i < N; i++) { const prev = x; x = Number((BigInt(a) * BigInt(x) + BigInt(c)) % BigInt(m)); X.push(x); U.push(x / m); if (i < steps) rows.push([i + 1, `(${a}·${prev} + ${c}) mod ${m}`, x, x / m]); }
+      // period
+      let period = null; const seen = new Map(); let y = Math.round(num('x0'));
+      for (let i = 0; i < Math.min(m + 1, 200000); i++) { if (seen.has(y)) { period = i - seen.get(y); break; } seen.set(y, i); y = Number((BigInt(a) * BigInt(y) + BigInt(c)) % BigInt(m)); }
+      p1out(X, U, rows, period, m, true);
+    } else {
+      let x = Math.round(num('ms0')); $('#form').textContent = 'Xₙ₊₁ = средние 4 цифры числа Xₙ² (8 знаков)';
+      const seen = new Map(); let period = null, degen = null;
+      for (let i = 0; i < N; i++) { const sq = String(x * x).padStart(8, '0'); const nx = +sq.slice(2, 6); if (i < Math.max(steps, 10)) rows.push([i + 1, `${x}² = ${sq} → ${sq.slice(2, 6)}`, nx, nx / 10000]); if (seen.has(nx) && period === null) { period = i - seen.get(nx); degen = i + 1; } seen.set(nx, i); x = nx; X.push(x); U.push(x / 10000); }
+      p1out(X, U, rows, period, 10000, false, degen);
+    }
+  }
+  function p1out(X, U, rows, period, m, lcg, degen) {
+    $('#steps').innerHTML = `<table><tr><th>n</th><th>Вычисление</th><th class="num">Xₙ</th><th class="num">Uₙ</th></tr>${rows.map(r => `<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${fmt(r[3], 4)}</td></tr>`).join('')}</table>`;
+    const M = mean(U), D = varPop(U);
+    const period_ok = period === null ? 'не найден' : period;
+    $('#k').innerHTML = kpi('Среднее', fmt(M), 'теория 0,5') + kpi('Дисперсия', fmt(D), 'теория 0,0833') + kpi('Min / Max', `${fmt(Math.min(...U), 3)} / ${fmt(Math.max(...U), 3)}`) + kpi('Период', period_ok, lcg ? `максимум ${m > 1e6 ? '2³²' : m}` : 'повтор значения') + kpi('N', U.length);
+    const h = hist(U, 10, 0, 1); const exp = U.length / 10;
+    const chi = sum(h.c.map(o => (o - exp) ** 2 / exp));
+    const dev = Math.max(...h.c.map(o => Math.abs(o - exp)));
+    let msg;
+    if (lcg && period !== null && period < Math.min(m, U.length)) msg = `Период ${period} меньше объёма выборки: последовательность начинает повторяться после ${period} значений. Для учебной проверки качества возьмите большой модуль m.`;
+    else if (!lcg) msg = degen ? `Метод середины квадратов вырождается: значение повторилось на шаге ${degen}, далее последовательность зацикливается (период ${period}).` : 'Повторов на заданном объёме не обнаружено.';
+    else msg = `Среднее отличается от 0,5 на ${fmt(Math.abs(M - .5))}, дисперсия от 1/12 — на ${fmt(Math.abs(D - 1 / 12))}. χ² по 10 интервалам = ${fmt(chi, 2)} (критическое значение при α = 0,05 и 9 степенях свободы — 16,92): ${chi < 16.92 ? 'равномерность не отвергается' : 'равномерность отвергается'}. Максимальное отклонение частоты от N/10 — ${fmt(dev, 0)}.`;
+    $('#concl').textContent = msg;
+    const P = palette();
+    chart('h', { type: 'bar', data: { labels: h.mids.map(x => fmt(x, 2)), datasets: [{ label: 'Частота', data: h.c, backgroundColor: hexA(P.c[0], .75), borderColor: P.c[0], borderWidth: 1, barPercentage: 1, categoryPercentage: .95 }, { type: 'line', label: 'Ожидаемая N/10', data: h.c.map(() => exp), borderColor: P.c[1], borderDash: [5, 4], pointRadius: 0, borderWidth: 2 }] }, options: { scales: { x: {}, y: { beginAtZero: true } } } });
+    const pts = []; for (let i = 0; i < Math.min(U.length - 1, 3000); i++) pts.push({ x: U[i], y: U[i + 1] });
+    chart('sc', { type: 'scatter', data: { datasets: [{ label: 'пары', data: pts, backgroundColor: hexA(P.c[0], .55), pointRadius: U.length > 500 ? 1.6 : 3 }] }, options: { plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 1, title: { text: 'Uₙ' } }, y: { min: 0, max: 1, title: { text: 'Uₙ₊₁' } } } } });
+  }
+  redraw = run; setV(); run();
+}
+
+/* ============================================================ PR2 */
+const DIST = {
+  exp: { name: 'Экспоненциальное', F: (p) => `F(x) = 1 − e^(−${fmtS(p.l)}·x), x ≥ 0`, inv: (p) => `X = −ln(1 − U) / ${fmtS(p.l)}`, gen: (p, u) => -Math.log(1 - u) / p.l, cdf: (p, x) => x < 0 ? 0 : 1 - Math.exp(-p.l * x), pdf: (p, x) => x < 0 ? 0 : p.l * Math.exp(-p.l * x), M: p => 1 / p.l, D: p => 1 / p.l ** 2, params: [['l', 'λ']] },
+  pow: { name: 'Степенное', F: p => `F(x) = (x/${p.a})^${p.k}, 0 ≤ x ≤ ${p.a}`, inv: p => `X = ${p.a}·U^(1/${p.k})`, gen: (p, u) => p.a * Math.pow(u, 1 / p.k), cdf: (p, x) => x <= 0 ? 0 : x >= p.a ? 1 : Math.pow(x / p.a, p.k), pdf: (p, x) => x < 0 || x > p.a ? 0 : p.k * Math.pow(x, p.k - 1) / Math.pow(p.a, p.k), M: p => p.a * p.k / (p.k + 1), D: p => p.a * p.a * p.k / ((p.k + 2) * (p.k + 1) ** 2), params: [['a', 'a'], ['k', 'k']] },
+  wei: { name: 'Вейбулла', F: p => `F(x) = 1 − e^(−(x/${p.l})^${p.k}), x ≥ 0`, inv: p => `X = ${p.l}·(−ln(1 − U))^(1/${p.k})`, gen: (p, u) => p.l * Math.pow(-Math.log(1 - u), 1 / p.k), cdf: (p, x) => x <= 0 ? 0 : 1 - Math.exp(-Math.pow(x / p.l, p.k)), pdf: (p, x) => x < 0 ? 0 : (p.k / p.l) * Math.pow(x / p.l, p.k - 1) * Math.exp(-Math.pow(x / p.l, p.k)), M: p => p.l * gammaFn(1 + 1 / p.k), D: p => p.l ** 2 * (gammaFn(1 + 2 / p.k) - gammaFn(1 + 1 / p.k) ** 2), params: [['l', 'λ'], ['k', 'k']] },
+  par: { name: 'Парето', F: p => `F(x) = 1 − (${p.xm}/x)^${p.al}, x ≥ ${p.xm}`, inv: p => `X = ${p.xm} / (1 − U)^(1/${p.al})`, gen: (p, u) => p.xm / Math.pow(1 - u, 1 / p.al), cdf: (p, x) => x < p.xm ? 0 : 1 - Math.pow(p.xm / x, p.al), pdf: (p, x) => x < p.xm ? 0 : p.al * Math.pow(p.xm, p.al) / Math.pow(x, p.al + 1), M: p => p.al > 1 ? p.al * p.xm / (p.al - 1) : Infinity, D: p => p.al > 2 ? p.xm ** 2 * p.al / ((p.al - 1) ** 2 * (p.al - 2)) : Infinity, params: [['xm', 'xₘ'], ['al', 'α']] },
+  uni: { name: 'Равномерное', F: p => `F(x) = (x − ${p.a}) / (${p.b} − ${p.a}), ${p.a} ≤ x ≤ ${p.b}`, inv: p => `X = ${p.a} + (${p.b} − ${p.a})·U`, gen: (p, u) => p.a + (p.b - p.a) * u, cdf: (p, x) => x < p.a ? 0 : x > p.b ? 1 : (x - p.a) / (p.b - p.a), pdf: (p, x) => x < p.a || x > p.b ? 0 : 1 / (p.b - p.a), M: p => (p.a + p.b) / 2, D: p => (p.b - p.a) ** 2 / 12, params: [['a', 'a'], ['b', 'b']] },
+  sexp: { name: 'Сдвинутое экспоненциальное', F: p => `F(x) = 1 − e^(−${fmtS(p.l)}·(x − ${p.a})), x ≥ ${p.a}`, inv: p => `X = ${p.a} − ln(1 − U) / ${fmtS(p.l)}`, gen: (p, u) => p.a - Math.log(1 - u) / p.l, cdf: (p, x) => x < p.a ? 0 : 1 - Math.exp(-p.l * (x - p.a)), pdf: (p, x) => x < p.a ? 0 : p.l * Math.exp(-p.l * (x - p.a)), M: p => p.a + 1 / p.l, D: p => 1 / p.l ** 2, params: [['a', 'a'], ['l', 'λ']] },
+};
+function pr2() {
+  const p = PR[1];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 1)</span><select id="v">${variantOptions(20)}</select></label>
+    <div class="task" id="dname"></div>
+    <div class="grid2" id="params"></div>
+    <div class="grid2"><label class="f"><span>N</span><select id="n"><option>1000</option><option>10000</option><option>100000</option></select></label>
+    <label class="f"><span>seed</span><input id="seed" type="number" value="42"></label></div>
+    <div class="btns"><button class="primary" id="run">Сгенерировать</button><button id="one">Один шаг U → X</button></div>
+    <div class="formula" id="fF"></div><div class="formula" id="fI"></div>`,
+    `<div class="panel"><h2>Сравнение с теорией</h2><div class="tbl" id="tab"></div><div class="small" id="first"></div></div>
+     <div class="row2"><div class="panel"><h3>Гистограмма и теоретическая плотность</h3><div class="chart"><canvas id="h"></canvas></div></div>
+     <div class="panel"><h3>Метод инверсии на графике F(x)</h3><div class="chart"><canvas id="inv"></canvas></div><div class="small" id="invt"></div></div></div>`);
+  let cur;
+  const setV = () => { const [k, prm] = V2[+$('#v').value]; cur = { k, prm: { ...prm } }; const D = DIST[k];
+    $('#dname').innerHTML = `<b>${D.name}</b> закон распределения`;
+    $('#params').innerHTML = D.params.filter(([key]) => !(k === 'pow' && key === 'k' && false)).map(([key, lab]) => `<label class="f"><span>${lab}</span><input id="p_${key}" type="number" step="any" value="${prm[key]}"></label>`).join('');
+    D.params.forEach(([key]) => $('#p_' + key).onchange = run); };
+  $('#v').onchange = () => { setV(); run(); }; $('#run').onclick = run; $('#n').onchange = run;
+  let demoRng = mulberry32(7);
+  $('#one').onclick = () => drawInv(demoRng());
+  function readP() { const D = DIST[cur.k]; const q = {}; D.params.forEach(([key]) => q[key] = num('p_' + key)); return q; }
+  function run() {
+    const D = DIST[cur.k], q = readP(); $('#fF').textContent = D.F(q); $('#fI').textContent = D.inv(q);
+    const r = mulberry32(Math.round(num('seed'))); const N1 = +$('#n').value;
+    const gen = n => Array.from({ length: n }, () => D.gen(q, r()));
+    const x1 = gen(N1), x2 = gen(N1 === 1000 ? 10000 : N1 * 10 > 200000 ? 100000 : N1 * 10);
+    const st = a => { const s = [...a].sort((p, q) => p - q); return [mean(a), varS(a), Math.sqrt(varS(a)), s[0], s[s.length - 1]]; };
+    const s1 = st(x1), s2 = st(x2), th = [D.M(q), D.D(q), Math.sqrt(D.D(q)), null, null];
+    const names = ['Среднее', 'Дисперсия', 'Стандартное отклонение', 'Минимум', 'Максимум'];
+    $('#tab').innerHTML = `<table><tr><th>Характеристика</th><th class="num">N = ${x1.length}</th><th class="num">N = ${x2.length}</th><th class="num">Теоретическое значение</th></tr>${names.map((nm, i) => `<tr><td>${nm}</td><td class="num">${fmt(s1[i])}</td><td class="num">${fmt(s2[i])}</td><td class="num">${th[i] === null ? '—' : fmt(th[i])}</td></tr>`).join('')}</table>`;
+    $('#first').textContent = 'Первые 10 значений: ' + x1.slice(0, 10).map(x => fmt(x, 4)).join('; ');
+    // histogram on x1 with 20 bins (trim Pareto tail at 99th percentile)
+    const srt = [...x1].sort((a, b) => a - b); const hiQ = cur.k === 'par' ? quantile(srt, .99) : srt[srt.length - 1];
+    const h = hist(x1.filter(x => x <= hiQ), 20, srt[0], hiQ); const scale = x1.length * h.w;
+    const P = palette();
+    chart('h', { type: 'bar', data: { labels: h.mids.map(x => fmt(x, 2)), datasets: [{ label: 'Плотность выборки', data: h.c.map(c => c / scale), backgroundColor: hexA(P.c[0], .7), barPercentage: 1, categoryPercentage: .96 }, { type: 'line', label: 'f(x) теоретическая', data: h.mids.map(x => D.pdf(q, x)), borderColor: P.c[1], borderWidth: 2, pointRadius: 0, tension: .3 }] }, options: { scales: { x: { title: { text: 'x' } }, y: { beginAtZero: true } } } });
+    cur.q = q; cur.range = [Math.min(srt[0], cur.k === 'uni' ? q.a : 0), hiQ]; drawInv(.73);
+  }
+  function drawInv(u) {
+    const D = DIST[cur.k], q = cur.q; const [lo, hi] = cur.range; const pts = []; for (let i = 0; i <= 120; i++) { const x = lo + (hi - lo) * i / 120; pts.push({ x, y: D.cdf(q, x) }); }
+    const x = D.gen(q, u), P = palette();
+    chart('inv', { type: 'scatter', data: { datasets: [{ label: 'F(x)', data: pts, showLine: true, borderColor: P.c[0], borderWidth: 2, pointRadius: 0 }, { label: 'U → X', data: [{ x: lo, y: u }, { x: Math.min(x, hi), y: u }, { x: Math.min(x, hi), y: 0 }], showLine: true, borderColor: P.c[1], borderDash: [5, 4], pointRadius: [0, 4, 4], pointBackgroundColor: P.c[1], borderWidth: 2 }] }, options: { scales: { x: { min: lo, max: hi, title: { text: 'x' } }, y: { min: 0, max: 1, title: { text: 'F(x) = U' } } } } });
+    $('#invt').textContent = `U = ${fmt(u, 4)} → X = F⁻¹(U) = ${fmt(x, 4)}. Каждое равномерное число переводится в значение X по горизонтали графика функции распределения.`;
+  }
+  redraw = run; setV(); run();
+}
+
+/* ============================================================ PR3 */
+function pr3() {
+  const p = PR[2];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 2)</span><select id="v">${variantOptions(20)}</select></label>
+    <label class="f"><span>Показатель</span><input id="name" type="text"></label>
+    <label class="f"><span>Данные (через запятую или пробел)</span><textarea id="data" rows="6"></textarea></label>
+    <label class="f"><span>Доверительная вероятность</span><select id="gamma"><option value="0.95">0,95</option><option value="0.99">0,99</option><option value="0.9">0,90</option></select></label>
+    <div class="btns"><button class="primary" id="run">Рассчитать</button><button id="ex">Пример из МУ</button></div>`,
+    `<div class="panel"><h2>Результаты статистической обработки</h2><div class="tbl" id="tab"></div><div class="concl" id="concl"></div></div>
+     <div class="row2"><div class="panel"><h3>Гистограмма</h3><div class="chart"><canvas id="h"></canvas></div></div>
+     <div class="panel"><h3>Диаграмма размаха</h3><div class="chart short"><canvas id="bx"></canvas></div><div class="small" id="bxt"></div></div></div>
+     <div class="panel"><h3>Упорядоченный ряд</h3><div class="mono small" id="sorted"></div></div>`);
+  const setV = () => { const [nm, d] = V3[+$('#v').value]; $('#name').value = nm; $('#data').value = d; };
+  $('#v').onchange = () => { setV(); run(); }; $('#run').onclick = run; $('#gamma').onchange = run;
+  $('#ex').onclick = () => { $('#name').value = 'Время реакции системы, мс (пример)'; $('#data').value = '145, 151, 148, 153, 147, 150, 146, 155, 149, 152, 148, 144, 154, 151, 147'; run(); };
+  function run() {
+    const x = $('#data').value.split(/[\s;,]+/).map(s => parseFloat(s)).filter(v => isFinite(v));
+    if (x.length < 3) { $('#concl').textContent = 'Введите не меньше трёх числовых значений.'; return; }
+    const n = x.length, s = [...x].sort((a, b) => a - b), m = mean(x), S2 = varS(x), S = Math.sqrt(S2), med = quantile(s, .5), V = S / m * 100, se = S / Math.sqrt(n);
+    const g = +$('#gamma').value, t = tCrit(1 - (1 - g) / 2, n - 1);
+    const rows = [['Количество наблюдений n', n, ''], ['Среднее x̄', fmt(m), 'x̄ = Σxᵢ / n'], ['Медиана', fmt(med), 'середина упорядоченного ряда'], ['Дисперсия S²', fmt(S2), 'S² = Σ(xᵢ − x̄)² / (n − 1)'], ['Стандартное отклонение S', fmt(S), 'S = √S²'], ['Минимум', fmt(s[0]), ''], ['Максимум', fmt(s[n - 1]), ''], ['Размах R', fmt(s[n - 1] - s[0]), 'R = max − min'], ['Коэффициент вариации V, %', fmt(V, 2), 'V = S / x̄ · 100%'], ['Стандартная ошибка m', fmt(se), 'm = S / √n'], [`Доверительный интервал (γ = ${fmtS(g)})`, `${fmt(m - t * se)} … ${fmt(m + t * se)}`, `x̄ ± t·m, t = ${fmt(t, 3)} при ${n - 1} ст. свободы`]];
+    $('#tab').innerHTML = `<table><tr><th>Характеристика</th><th class="num">Значение</th><th>Формула / примечание</th></tr>${rows.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="small">${r[2]}</td></tr>`).join('')}</table>`;
+    const hom = V < 10 ? ['good', 'разброс слабый'] : V < 20 ? ['warn', 'разброс умеренный'] : V < 33 ? ['warn', 'разброс значительный'] : ['bad', 'совокупность неоднородна'];
+    $('#concl').innerHTML = `<span class="pill ${hom[0]}">V = ${fmt(V, 2)}% — ${hom[1]}</span> Среднее значение показателя «${esc($('#name').value)}» составляет ${fmt(m, 3)}; с вероятностью ${fmtS(g)} истинное среднее лежит в интервале от ${fmt(m - t * se, 3)} до ${fmt(m + t * se, 3)}. ${V < 33 ? 'Данные однородны, среднее хорошо описывает выборку.' : 'Данные неоднородны, стоит проверить выбросы.'}`;
+    $('#sorted').textContent = s.map(v => fmtS(v, 3)).join('  ');
+    const bins = Math.max(4, Math.round(1 + 3.322 * Math.log10(n))); const h = hist(x, bins); const P = palette();
+    chart('h', { type: 'bar', data: { labels: h.mids.map(v => fmt(v, 2)), datasets: [{ label: 'Частота', data: h.c, backgroundColor: hexA(P.c[2], .75), borderColor: P.c[2], borderWidth: 1, barPercentage: 1, categoryPercentage: .95 }] }, options: { plugins: { legend: { display: false } }, scales: { x: { title: { text: `интервалы (k = ${bins} по Стерджессу)` } }, y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+    const q1 = quantile(s, .25), q3 = quantile(s, .75), iqr = q3 - q1, wl = Math.max(s[0], q1 - 1.5 * iqr), wh = Math.min(s[n - 1], q3 + 1.5 * iqr), out = s.filter(v => v < wl || v > wh);
+    chart('bx', { type: 'scatter', data: { datasets: [
+      { label: 'ящик Q1–Q3', data: [{ x: q1, y: .7 }, { x: q3, y: .7 }, { x: q3, y: 1.3 }, { x: q1, y: 1.3 }, { x: q1, y: .7 }], showLine: true, borderColor: P.c[0], backgroundColor: hexA(P.c[0], .18), fill: true, pointRadius: 0, borderWidth: 2 },
+      { label: 'медиана', data: [{ x: med, y: .7 }, { x: med, y: 1.3 }], showLine: true, borderColor: P.c[1], borderWidth: 3, pointRadius: 0 },
+      { label: 'усы', data: [{ x: wl, y: 1 }, { x: q1, y: 1 }, { x: NaN, y: NaN }, { x: q3, y: 1 }, { x: wh, y: 1 }], showLine: true, spanGaps: false, borderColor: P.muted, borderWidth: 1.5, pointRadius: 0 },
+      { label: 'наблюдения', data: x.map((v, i) => ({ x: v, y: .35 + (i % 5) * .03 })), backgroundColor: hexA(P.c[2], .8), pointRadius: 3 },
+      { label: 'выбросы', data: out.map(v => ({ x: v, y: 1 })), backgroundColor: P.c[3], pointRadius: 5, pointStyle: 'crossRot', borderColor: P.c[3] }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { min: 0.2, max: 1.6, display: false }, x: { title: { text: esc($('#name').value) } } } } });
+    $('#bxt').textContent = `Q1 = ${fmt(q1, 3)}, медиана = ${fmt(med, 3)}, Q3 = ${fmt(q3, 3)}, межквартильный размах ${fmt(iqr, 3)}. ${out.length ? 'Выбросы: ' + out.map(v => fmtS(v, 3)).join(', ') : 'Выбросов по правилу 1,5·IQR нет.'}`;
+  }
+  redraw = run; setV(); run();
+}
+
+/* ============================================================ PR4 */
+function pr4() {
+  const p = PR[3];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 3)</span><select id="v">${variantOptions(20)}</select></label>
+    <div class="task" id="sys"></div>
+    <div><h3>Матрица P</h3><div class="tbl" id="pm"></div><div class="small" id="rowchk"></div></div>
+    <label class="f"><span>π₀ (через ;)</span><input id="pi0" type="text"></label>
+    <div class="grid2"><label class="f"><span>Шагов имитации</span><input id="steps" type="number" value="1000"></label>
+    <label class="f"><span>seed</span><input id="seed" type="number" value="42"></label></div>
+    <div class="btns"><button class="primary" id="run">Рассчитать</button></div>`,
+    `<div class="row2"><div class="panel"><h3>Граф переходов</h3><div id="graph"></div></div>
+     <div class="panel"><h3>Распределения πₙ = π₀·Pⁿ</h3><div class="tbl" id="pin"></div><div class="concl" id="st"></div></div></div>
+     <div class="panel"><h3>Сходимость πₙ по шагам</h3><div class="chart"><canvas id="conv"></canvas></div></div>
+     <div class="row2"><div class="panel"><h3>Имитация: первые 60 шагов траектории</h3><div class="strip" id="strip"></div><div class="small" id="legend"></div></div>
+     <div class="panel"><h3>Теория и имитация</h3><div class="chart short"><canvas id="cmp"></canvas></div></div></div>`);
+  let S, Pm;
+  const setV = () => { const [sys, st, P, pi0] = V4[+$('#v').value]; S = st.split(';'); Pm = P.map(r => [...r]); $('#sys').innerHTML = `<b>${sys}</b>: ${S.join(', ')}`; $('#pi0').value = pi0.join('; ');
+    $('#pm').innerHTML = `<table class="editor"><tr><th></th>${S.map(s => `<th>${esc(s)}</th>`).join('')}</tr>${Pm.map((r, i) => `<tr><th>${esc(S[i])}</th>${r.map((v, j) => `<td><input type="number" step="0.01" id="p${i}${j}" value="${v}"></td>`).join('')}</tr>`).join('')}</table>`;
+    Pm.forEach((r, i) => r.forEach((_, j) => $(`#p${i}${j}`).onchange = run)); };
+  $('#v').onchange = () => { setV(); run(); }; $('#run').onclick = run;
+  function run() {
+    Pm = S.map((_, i) => S.map((_, j) => num(`p${i}${j}`)));
+    const sums = Pm.map(r => sum(r)); const bad = sums.some(s => Math.abs(s - 1) > 1e-6);
+    $('#rowchk').innerHTML = bad ? `<span class="pill bad">Сумма строки ≠ 1: ${sums.map(s => fmtS(s, 3)).join('; ')}</span>` : `<span class="pill good">Матрица стохастическая: суммы строк = 1</span>`;
+    let pi0 = $('#pi0').value.split(/[;,\s]+/).map(Number).filter(v => isFinite(v)); if (pi0.length !== S.length) pi0 = S.map((_, i) => i ? 0 : 1);
+    const P = palette();
+    $('#graph').innerHTML = stateGraph(S, Pm);
+    const dist = [pi0]; for (let n = 1; n <= 30; n++) dist.push(vecMat(dist[n - 1], Pm));
+    let st = S.map(() => 1 / S.length); for (let k = 0; k < 5000; k++) st = vecMat(st, Pm);
+    const show = [1, 2, 5, 10];
+    $('#pin').innerHTML = `<table><tr><th>Состояние</th>${show.map(n => `<th class="num">π${['₁', '₂', '₅', '₁₀'][show.indexOf(n)]}</th>`).join('')}<th class="num">π (стац.)</th></tr>${S.map((s, i) => `<tr><td>${esc(s)}</td>${show.map(n => `<td class="num">${fmt(dist[n][i])}</td>`).join('')}<td class="num">${fmt(st[i])}</td></tr>`).join('')}</table>`;
+    const absorbing = S.filter((_, i) => Pm[i][i] === 1);
+    $('#st').textContent = absorbing.length ? `Состояние «${absorbing.join('», «')}» поглощающее (pᵢᵢ = 1): с течением времени система неизбежно приходит в него, стационарное распределение сосредоточено в нём.` : `Стационарное распределение удовлетворяет π = π·P и не зависит от начального состояния. Через 10 шагов отличие от него не больше ${fmt(Math.max(...st.map((v, i) => Math.abs(v - dist[10][i]))), 4)}.`;
+    chart('conv', { type: 'line', data: { labels: dist.map((_, n) => n), datasets: S.map((s, i) => ({ label: s, data: dist.map(d => d[i]), borderColor: P.c[i], backgroundColor: P.c[i], pointRadius: 2, borderWidth: 2 })) }, options: { scales: { x: { title: { text: 'шаг n' } }, y: { min: 0, max: 1, title: { text: 'вероятность' } } } } });
+    const r = mulberry32(Math.round(num('seed'))); const N = Math.max(10, Math.round(num('steps')));
+    const pick = v => { const u = r(); let c = 0; for (let i = 0; i < v.length; i++) { c += v[i]; if (u < c) return i; } return v.length - 1; };
+    let s = pick(pi0); const traj = [s]; const cnt = S.map(() => 0); cnt[s]++;
+    for (let k = 0; k < N; k++) { s = pick(Pm[s]); traj.push(s); cnt[s]++; }
+    $('#strip').innerHTML = traj.slice(0, 60).map(i => `<span style="background:${P.c[i]}" title="${esc(S[i])}">${i + 1}</span>`).join('');
+    $('#legend').innerHTML = S.map((s, i) => `<span style="color:${P.c[i]}">■</span> ${i + 1} — ${esc(s)}`).join(' &nbsp; ');
+    const fr = cnt.map(c => c / traj.length);
+    chart('cmp', { type: 'bar', data: { labels: S, datasets: [{ label: 'Стационарное π', data: st, backgroundColor: hexA(P.c[0], .8) }, { label: `Частоты по ${N} шагам`, data: fr, backgroundColor: hexA(P.c[1], .8) }] }, options: { scales: { x: {}, y: { min: 0, max: 1 } } } });
+  }
+  redraw = run; setV(); run();
+}
+
+/* ============================================================ PR5 */
+function buildQ(prm, n) { const Q = Array.from({ length: n }, () => new Array(n).fill(0)); if ('l' in prm) { Q[0][1] = prm.l; Q[1][0] = prm.m; } else for (const [k, v] of Object.entries(prm)) Q[+k[1]][+k[2]] = v; for (let i = 0; i < n; i++) Q[i][i] = -sum(Q[i].filter((_, j) => j !== i)); return Q; }
+function ctmcStationary(Q) { const n = Q.length; const A = Q[0].map((_, j) => Q.map(r => r[j])); A[n - 1] = new Array(n).fill(1); const b = new Array(n).fill(0); b[n - 1] = 1; return solveLinear(A, b); }
+function gillespie(Q, T, r, s0 = 0) { const n = Q.length; let t = 0, s = s0, trans = 0; const tm = new Array(n).fill(0), visits = new Array(n).fill(0); const path = [[0, s]]; visits[s]++;
+  while (t < T) { const rate = -Q[s][s]; if (rate <= 0) { tm[s] += T - t; break; } const tau = -Math.log(1 - r()) / rate; const dt = Math.min(tau, T - t); tm[s] += dt; t += dt; if (t >= T) break;
+    let u = r() * rate, ns = s; for (let j = 0; j < n; j++) { if (j === s) continue; u -= Q[s][j]; if (u <= 0) { ns = j; break; } } s = ns; trans++; visits[s]++; if (path.length < 400) path.push([t, s]); }
+  return { frac: tm.map(x => x / T), trans, meanSoj: T / Math.max(1, trans + 1), path, tm, visits }; }
+function pr5() {
+  const p = PR[4];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 1)</span><select id="v">${variantOptions(20)}</select></label>
+    <div class="task" id="sys"></div>
+    <div><h3>Интенсивности qᵢⱼ</h3><div class="tbl" id="qm"></div></div>
+    <label class="f"><span>seed</span><input id="seed" type="number" value="42"></label>
+    <div class="btns"><button class="primary" id="run">Моделировать</button></div>
+    <p class="small">Время пребывания в состоянии i распределено экспоненциально с параметром −qᵢᵢ: τ = −ln(1 − U) / (−qᵢᵢ). Следующее состояние выбирается с вероятностями qᵢⱼ / (−qᵢᵢ).</p>`,
+    `<div class="row2"><div class="panel"><h3>Граф интенсивностей</h3><div id="graph"></div></div>
+     <div class="panel"><h3>Матрица Q</h3><div class="tbl" id="qfull"></div><div class="concl" id="th"></div></div></div>
+     <div class="panel"><h2>Результаты (таблица 2)</h2><div class="tbl" id="tab"></div></div>
+     <div class="row2"><div class="panel"><h3>Траектория на интервале [0; 60]</h3><div class="chart"><canvas id="path"></canvas></div></div>
+     <div class="panel"><h3>pᵢ(t) по уравнениям Колмогорова, старт из состояния 0</h3><div class="chart"><canvas id="pt"></canvas></div></div></div>`);
+  let S, prm;
+  const setV = () => { const [st, pr] = V5[+$('#v').value]; S = st.split(';'); prm = { ...pr }; $('#sys').innerHTML = `<b>${S.length} состояния</b>: ${S.map((s, i) => `${i} — ${esc(s)}`).join(', ')}`;
+    const keys = Object.keys(prm); $('#qm').innerHTML = `<div class="grid2">${keys.map(k => `<label class="f"><span>${k === 'l' ? 'λ (0 → 1)' : k === 'm' ? 'μ (1 → 0)' : 'q' + k[1] + k[2]}</span><input id="q_${k}" type="number" step="0.01" value="${prm[k]}"></label>`).join('')}</div>`;
+    keys.forEach(k => $('#q_' + k).onchange = run); };
+  $('#v').onchange = () => { setV(); run(); }; $('#run').onclick = run;
+  function run() {
+    Object.keys(prm).forEach(k => prm[k] = num('q_' + k)); const Q = buildQ(prm, S.length), n = S.length, P = palette();
+    $('#graph').innerHTML = stateGraph(S, Q, { rate: true });
+    $('#qfull').innerHTML = `<table><tr><th></th>${S.map((_, j) => `<th class="num">${j}</th>`).join('')}</tr>${Q.map((r, i) => `<tr><th>${i}</th>${r.map(v => `<td class="num">${fmtS(v, 3)}</td>`).join('')}</tr>`).join('')}</table>`;
+    const pst = ctmcStationary(Q);
+    $('#th').textContent = 'Стационарные вероятности из p·Q = 0, Σp = 1: ' + pst.map((v, i) => `p${i} = ${fmt(v)}`).join('; ') + '. Среднее время пребывания: ' + Q.map((r, i) => `${i}: ${fmt(-1 / r[i], 2)}`).join('; ') + '.';
+    const r = mulberry32(Math.round(num('seed'))); const a = gillespie(Q, 1000, r), b = gillespie(Q, 10000, r);
+    const thSoj = sum(pst.map((pi, i) => pi * -Q[i][i])); // mean rate weighted → expected transitions per unit time
+    const rows = S.map((s, i) => [`Доля времени в состоянии ${i}`, a.frac[i], b.frac[i], pst[i]]);
+    rows.push(['Среднее время пребывания', a.meanSoj, b.meanSoj, 1 / thSoj]); rows.push(['Количество переходов', a.trans, b.trans, null]);
+    $('#tab').innerHTML = `<table><tr><th>Характеристика</th><th class="num">T = 1000</th><th class="num">T = 10000</th><th class="num">Теоретическое значение</th></tr>${rows.map((rw, k) => `<tr><td>${rw[0]}</td><td class="num">${k === rows.length - 1 ? rw[1] : fmt(rw[1])}</td><td class="num">${k === rows.length - 1 ? rw[2] : fmt(rw[2])}</td><td class="num">${rw[3] === null ? `≈ ${fmt(thSoj * 1000, 0)} / ${fmt(thSoj * 10000, 0)}` : fmt(rw[3])}</td></tr>`).join('')}</table>`;
+    const pts = []; for (let k = 0; k < a.path.length && a.path[k][0] <= 60; k++) { pts.push({ x: a.path[k][0], y: a.path[k][1] }); }
+    const last = pts[pts.length - 1]; pts.push({ x: 60, y: last.y });
+    chart('path', { type: 'scatter', data: { datasets: [{ label: 'состояние', data: pts, showLine: true, stepped: 'before', borderColor: P.c[0], pointRadius: 0, borderWidth: 2 }] }, options: { plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 60, title: { text: 't' } }, y: { min: -.3, max: n - .7, ticks: { stepSize: 1, callback: v => Number.isInteger(v) ? S[v] : '' } } } } });
+    // Kolmogorov forward equations by small-step Euler
+    let pv = S.map((_, i) => i ? 0 : 1); const tmax = Math.max(10, 6 / Math.min(...Q.map((r, i) => -r[i]).filter(v => v > 0))); const dt = tmax / 2000; const ser = S.map(() => []); const labs = [];
+    for (let k = 0; k <= 2000; k++) { if (k % 40 === 0) { labs.push(fmt(k * dt, 1)); pv.forEach((v, i) => ser[i].push(v)); } const d = vecMat(pv, Q); pv = pv.map((v, i) => v + d[i] * dt); }
+    chart('pt', { type: 'line', data: { labels: labs, datasets: S.map((s, i) => ({ label: s, data: ser[i], borderColor: P.c[i], pointRadius: 0, borderWidth: 2 })) }, options: { scales: { x: { title: { text: 't' }, ticks: { maxTicksLimit: 8 } }, y: { min: 0, max: 1 } } } });
+  }
+  redraw = run; setV(); run();
+}
+
+/* ============================================================ PR6 */
+function bdTheory(l, m, c, K) {
+  const inf = !K; if (inf && l >= c * m) return null; const N = inf ? 2000 : K; const w = [1]; for (let n = 1; n <= N; n++) { w.push(w[n - 1] * l / (Math.min(n, c) * m)); if (inf && w[n] < 1e-15 && n > c) break; }
+  const Z = sum(w), p = w.map(x => x / Z); const L = sum(p.map((v, n) => n * v)), Lq = sum(p.map((v, n) => Math.max(0, n - c) * v)); const Pref = inf ? 0 : p[K]; const le = l * (1 - Pref);
+  return { p, P0: p[0], L, Lq, W: L / le, Wq: Lq / le, Pref, rho: l / (c * m), util: le / (c * m) };
+}
+function bdSim(l, m, c, K, T, r) { let t = 0, n = 0, arr = 0, rej = 0, served = 0; const tm = []; const path = [[0, 0]];
+  while (t < T) { const ra = l, rs = Math.min(n, c) * m, R = ra + rs; const tau = -Math.log(1 - r()) / R; const dt = Math.min(tau, T - t); tm[n] = (tm[n] || 0) + dt; t += dt; if (t >= T) break;
+    if (r() < ra / R) { arr++; if (K && n >= K) rej++; else n++; } else { n--; served++; } if (path.length < 2000 && t < 30) path.push([t, n]); }
+  const p = Array.from({ length: tm.length }, (_, i) => (tm[i] || 0) / T); const L = sum(p.map((v, k) => k * v)), Lq = sum(p.map((v, k) => Math.max(0, k - c) * v)); const le = (arr - rej) / T;
+  return { p, P0: p[0] || 0, L, Lq, W: L / le, Pref: arr ? rej / arr : 0, rho: l / (c * m), util: sum(p.map((v, k) => Math.min(k, c) * v)) / c, path, arr, rej, served }; }
+function pr6() {
+  const p = PR[5];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 1)</span><select id="v">${variantOptions(20)}</select></label>
+    <div class="task" id="sys"></div>
+    <div class="grid2"><label class="f"><span>λ, заявок/ед. вр.</span><input id="l" type="number" step="any"></label>
+    <label class="f"><span>μ, на канал</span><input id="m" type="number" step="any"></label>
+    <label class="f"><span>c, каналов</span><input id="c" type="number" min="1" max="10"></label>
+    <label class="f"><span>K, мест (0 = ∞)</span><input id="K" type="number" min="0"></label></div>
+    <label class="f"><span>seed</span><input id="seed" type="number" value="42"></label>
+    <div class="btns"><button class="primary" id="run">Рассчитать и моделировать</button></div>
+    <p class="small">Состояние n — число заявок в системе. Переход n → n+1 с интенсивностью λ (если n &lt; K), n → n−1 с интенсивностью min(n, c)·μ.</p>`,
+    `<div class="panel"><div class="kpis" id="k"></div><div class="concl" id="concl"></div></div>
+     <div class="panel"><h2>Результаты (таблица 2)</h2><div class="tbl" id="tab"></div></div>
+     <div class="row2"><div class="panel"><h3>Вероятности состояний Pₙ</h3><div class="chart"><canvas id="pn"></canvas></div></div>
+     <div class="panel"><h3>Число заявок n(t) на интервале [0; 30]</h3><div class="chart"><canvas id="nt"></canvas></div></div></div>`);
+  const setV = () => { const [nm, l, m, c, K] = V6[+$('#v').value]; $('#sys').innerHTML = `<b>${esc(nm)}</b>`; $('#l').value = l; $('#m').value = m; $('#c').value = c; $('#K').value = K; };
+  $('#v').onchange = () => { setV(); run(); }; $('#run').onclick = run; ['l', 'm', 'c', 'K'].forEach(i => $('#' + i).onchange = run);
+  function run() {
+    const l = num('l'), m = num('m'), c = Math.max(1, Math.round(num('c'))), K = Math.max(0, Math.round(num('K'))) || 0; const Kc = K && K < c ? c : K;
+    const th = bdTheory(l, m, c, Kc), r = mulberry32(Math.round(num('seed'))), s1 = bdSim(l, m, c, Kc, 1000, r), s2 = bdSim(l, m, c, Kc, 10000, r), P = palette();
+    const name = `M/M/${c}${Kc ? '/' + Kc : ''}`;
+    $('#k').innerHTML = kpi('Модель', name) + kpi('ρ = λ / (c·μ)', fmt(l / (c * m), 3), l / (c * m) < 1 ? 'система устойчива' : (Kc ? 'очередь ограничена' : 'неустойчива')) + kpi('P₀', th ? fmt(th.P0) : '—') + kpi('L', th ? fmt(th.L, 3) : '∞') + kpi('W', th ? fmt(th.W, 3) : '∞') + kpi('Pотк', th ? fmt(th.Pref) : '—');
+    if (!th) { $('#concl').innerHTML = `<span class="pill bad">ρ ≥ 1</span> Интенсивность поступления не меньше суммарной интенсивности обслуживания: без ограничения мест очередь растёт неограниченно, стационарного режима нет. Имитация показывает рост n(t).`; }
+    else $('#concl').innerHTML = `<span class="pill ${th.util < .8 ? 'good' : th.util < .95 ? 'warn' : 'bad'}">загрузка каналов ${fmt(th.util * 100, 1)}%</span> В среднем в системе ${fmt(th.L, 2)} заявки, из них в очереди ${fmt(th.Lq, 2)}; заявка проводит в системе ${fmt(th.W, 3)} ед. времени${Kc ? `, отказ получает ${fmt(th.Pref * 100, 2)}% заявок` : ''}.`;
+    const rows = [['Коэффициент загрузки ρ', s1.rho, s2.rho, l / (c * m)], ['Вероятность простоя P₀', s1.P0, s2.P0, th?.P0], ['Среднее число заявок L', s1.L, s2.L, th?.L], ['Среднее время в системе W', s1.W, s2.W, th?.W], ['Вероятность отказа Pотк', s1.Pref, s2.Pref, th ? th.Pref : null], ['Средняя длина очереди Lq', s1.Lq, s2.Lq, th?.Lq]];
+    $('#tab').innerHTML = `<table><tr><th>Характеристика</th><th class="num">T = 1000</th><th class="num">T = 10000</th><th class="num">Теоретическое значение</th></tr>${rows.map(rw => `<tr><td>${rw[0]}</td><td class="num">${fmt(rw[1])}</td><td class="num">${fmt(rw[2])}</td><td class="num">${rw[3] == null ? '—' : fmt(rw[3])}</td></tr>`).join('')}</table><p class="small">Имитация: T = 10000 — поступило ${s2.arr} заявок, обслужено ${s2.served}, отказов ${s2.rej}.</p>`;
+    const nmax = Math.min(Kc || 25, Math.max(10, s2.p.length - 1, 0)); const labs = Array.from({ length: nmax + 1 }, (_, i) => i);
+    chart('pn', { type: 'bar', data: { labels: labs, datasets: [{ label: 'теория', data: labs.map(i => th ? th.p[i] ?? 0 : null), backgroundColor: hexA(P.c[0], .8) }, { label: 'имитация T = 10000', data: labs.map(i => s2.p[i] || 0), backgroundColor: hexA(P.c[1], .8) }] }, options: { scales: { x: { title: { text: 'n — заявок в системе' } }, y: { beginAtZero: true } } } });
+    const pts = s1.path.map(([t, n]) => ({ x: t, y: n })); pts.push({ x: 30, y: pts[pts.length - 1].y });
+    chart('nt', { type: 'scatter', data: { datasets: [{ label: 'n(t)', data: pts, showLine: true, stepped: 'before', borderColor: P.c[2], pointRadius: 0, borderWidth: 1.6 }, { label: `c = ${c}`, data: [{ x: 0, y: c }, { x: 30, y: c }], showLine: true, borderColor: P.muted, borderDash: [4, 4], pointRadius: 0, borderWidth: 1 }] }, options: { scales: { x: { min: 0, max: 30, title: { text: 't' } }, y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+  }
+  redraw = run; setV(); run();
+}
+
+/* ============================================================ PR7 */
+const T7 = [
+  [['Клиент 1','Прибытие',0,0.2],['Клиент 1','Обслуживание',0,5],['Клиент 2','Ожидание',2,5],['Клиент 2','Обслуживание',5,9],['Клиент 3','Ожидание',6,9],['Клиент 3','Обслуживание',9,14],['Кассир','Занят',0,14]],
+  [['Кассир 1','Занят',0,6],['Кассир 1','Простой',6,8],['Кассир 1','Занят',8,14],['Кассир 2','Простой',0,2],['Кассир 2','Занят',2,11],['Клиент 3','Ожидание',4,6],['Клиент 5','Ожидание',7,8]],
+  [['Студент','Дорога',0,1],['Студент','Пара',1,2.5],['Студент','Перерыв',2.5,2.7],['Студент','Пара',2.7,4.2],['Студент','Перерыв',4.2,5],['Студент','Пара',5,6.5],['Студент','Самостоятельная работа',7,9],['Студент','Дорога',9,10]],
+  [['Станок 1','Обработка',0,4],['Станок 1','Обработка',4,8],['Станок 2','Простой',0,4],['Станок 2','Обработка',4,9],['Станок 3','Простой',0,9],['Станок 3','Обработка',9,12],['Деталь 2','Ожидание',8,9]],
+  [['Отправитель','Отправка',0,1],['Канал','Ожидание',1,2],['Канал','Передача',2,8],['Получатель','Подтверждение',8,9]],
+  [['Задача A','Выполнение',0,3],['Задача B','Ожидание',0,3],['Процессор','Переключение',3,3.5],['Задача B','Выполнение',3.5,6],['Задача C','Ожидание',0,6.5],['Процессор','Переключение',6,6.5],['Задача C','Выполнение',6.5,9]],
+  [['Оборудование','Диагностика',0,2],['Оборудование','Ремонт',2,7],['Оборудование','Проверка',7,8.5],['Мастер','Занят',0,8.5]],
+  [['Звонок 1','Разговор',0,4],['Звонок 2','Очередь',1,4],['Звонок 2','Разговор',4,7],['Звонок 3','Очередь',3,7],['Звонок 3','Разговор',7,9],['Оператор','Занят',0,9]],
+  [['Клиент 1','Поиск заказа',0,2],['Клиент 1','Выдача',2,3],['Клиент 2','Ожидание',1,3],['Клиент 2','Поиск заказа',3,6],['Клиент 2','Выдача',6,7],['Сотрудник','Занят',0,7]],
+  [['Браузер','Запрос',0,0.2],['Сервер','Ответ сервера',0.2,1.1],['Браузер','Загрузка ресурсов',1.1,2.6],['Браузер','Отрисовка',2.6,3]],
+  [['Пассажир','Покупка билета',0,10],['Пассажир','Ожидание',10,35],['Пассажир','Посадка',35,42],['Касса','Занята',0,10]],
+  [['Пациент 1','Оформление',0,4],['Пациент 1','Приём',4,19],['Пациент 2','Очередь',2,4],['Пациент 2','Оформление',4,8],['Пациент 2','Ожидание',8,19],['Пациент 2','Приём',19,32],['Регистратор','Простой',8,12]],
+  [['Автомобиль 1','Мойка',0,10],['Автомобиль 1','Сушка',10,14],['Автомобиль 1','Оплата',14,16],['Автомобиль 2','Ожидание',4,10],['Автомобиль 2','Мойка',10,20],['Автомобиль 2','Сушка',20,24],['Пост мойки','Простой',20,26]],
+  [['Склад','Приём товара',0,2],['Склад','Сортировка',2,4],['Склад','Хранение',4,20],['Склад','Выдача',20,22]],
+  [['Банкомат','Работа',0,6],['Банкомат','Простой',6,8],['Банкомат','Пополнение наличных',8,9],['Банкомат','Работа',9,16]],
+  [['Программа','Запуск',0,1],['Программа','Выполнение тестов',1,7],['Программа','Анализ ошибок',7,10],['Программа','Выполнение тестов',10,13]],
+  [['Повар','Подготовка',0,10],['Повар','Готовка',10,35],['Официант','Простой',0,35],['Официант','Подача',35,38]],
+  [['Автобус','Остановка',0,2],['Автобус','Движение',2,9],['Автобус','Остановка',9,11],['Автобус','Движение',11,18],['Автобус','Ожидание',18,23]],
+  [['Заказ','Комплектация',0,15],['Заказ','Упаковка',15,20],['Заказ','Ожидание',20,60],['Заказ','Доставка',60,120]],
+  [['Группа','Планирование',0,2],['Группа','Разработка',2,8],['Группа','Проверка',8,10],['Группа','Разработка',10,11],['Группа','Сдача',11,12]],
+];
+function pr7() {
+  const p = PR[6];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 2)</span><select id="v">${variantOptions(20)}</select></label>
+    <div class="task" id="sys"></div>
+    <h3>Генератор очереди</h3>
+    <div class="grid2"><label class="f"><span>Клиентов</span><input id="nc" type="number" value="6" min="1" max="30"></label>
+    <label class="f"><span>Каналов</span><input id="ns" type="number" value="1" min="1" max="5"></label>
+    <label class="f"><span>Средний интервал</span><input id="ia" type="number" value="3" step="any"></label>
+    <label class="f"><span>Среднее обслуживание</span><input id="sv" type="number" value="4" step="any"></label></div>
+    <label class="f"><span>seed</span><input id="seed" type="number" value="42"></label>
+    <div class="btns"><button id="gen">Смоделировать очередь</button><button id="mu">Пример из МУ</button></div>
+    <p class="small">Таблицу интервалов можно править вручную: объект, состояние, начало и конец. Диаграмма и показатели пересчитываются сразу.</p>`,
+    `<div class="panel"><h3>Временная диаграмма</h3><div class="chart tall" id="gwrap"><canvas id="g"></canvas></div></div>
+     <div class="row2"><div class="panel"><h3>Таблица интервалов</h3><div class="tbl" id="ed"></div><div class="btns"><button id="add">Добавить интервал</button></div></div>
+     <div class="panel"><h2>Показатели (таблица 3)</h2><div class="tbl" id="tab"></div></div></div>`);
+  let rows = [];
+  const setV = () => { const i = +$('#v').value, [s, w] = V7[i]; $('#sys').innerHTML = `<b>${esc(s)}</b><br>Показать: ${esc(w)}. Пример данных для варианта загружен в таблицу, замените его своими значениями.`; rows = T7[i].map(r => [...r]); render(); };
+  $('#v').onchange = setV;
+  $('#mu').onclick = () => { rows = [['Клиент 1', 'Ожидание', 0, 3], ['Клиент 1', 'Обслуживание', 3, 8], ['Клиент 2', 'Ожидание', 2, 8], ['Клиент 2', 'Обслуживание', 8, 13], ['Кассир', 'Занят', 3, 13], ['Кассир', 'Простой', 0, 3]]; render(); };
+  $('#gen').onclick = () => { const r = mulberry32(Math.round(num('seed'))), nc = Math.round(num('nc')), ns = Math.max(1, Math.round(num('ns'))), ia = num('ia'), sv = num('sv'); const free = new Array(ns).fill(0); let t = 0; rows = []; const busy = Array.from({ length: ns }, () => []);
+    for (let k = 1; k <= nc; k++) { t += -Math.log(1 - r()) * ia; const j = free.indexOf(Math.min(...free)); const st = Math.max(t, free[j]); const d = -Math.log(1 - r()) * sv; const r2 = x => Math.round(x * 10) / 10;
+      if (st > t + 1e-9) rows.push([`Клиент ${k}`, 'Ожидание', r2(t), r2(st)]); rows.push([`Клиент ${k}`, 'Обслуживание', r2(st), r2(st + d)]); busy[j].push([r2(st), r2(st + d)]); free[j] = st + d; }
+    const end = Math.max(...rows.map(x => x[3])); busy.forEach((b, j) => { let c = 0; const nm = ns === 1 ? 'Кассир' : `Канал ${j + 1}`; b.forEach(([s, e]) => { if (s > c) rows.push([nm, 'Простой', c, s]); rows.push([nm, 'Занят', s, e]); c = e; }); if (c < end) rows.push([nm, 'Простой', c, end]); }); render(); };
+  $('#add').onclick = () => { const e = rows.length ? Math.max(...rows.map(x => x[3])) : 0; rows.push(['Объект', 'Состояние', e, e + 1]); render(); };
+  function render() {
+    $('#ed').innerHTML = `<table class="editor"><tr><th>Объект</th><th>Состояние</th><th>Начало</th><th>Конец</th><th></th></tr>${rows.map((r, i) => `<tr>${r.map((v, j) => `<td><input id="c${i}_${j}" type="${j < 2 ? 'text' : 'number'}" step="any" value="${esc(v)}"></td>`).join('')}<td><button class="x" data-del="${i}" aria-label="Удалить">✕</button></td></tr>`).join('')}</table>`;
+    rows.forEach((r, i) => r.forEach((_, j) => $(`#c${i}_${j}`).onchange = e => { rows[i][j] = j < 2 ? e.target.value : parseFloat(e.target.value); draw(); }));
+    $('#ed').querySelectorAll('[data-del]').forEach(b => b.onclick = () => { rows.splice(+b.dataset.del, 1); render(); });
+    draw();
+  }
+  function draw() {
+    const P = palette(); const objs = [...new Set(rows.map(r => r[0]))]; const states = [...new Set(rows.map(r => String(r[1]).toLowerCase()))];
+    const colOf = s => { s = s.toLowerCase(); if (/ожид|очеред/.test(s)) return P.c[1]; if (/прост/.test(s)) return P.muted; if (/обслуж|занят|выполн|работа|разговор|мойка|обработ|ремонт|готов/.test(s)) return P.c[0]; return P.c[2 + states.indexOf(s) % 3]; };
+    $('#gwrap').style.height = Math.max(200, 60 + objs.length * 44) + 'px';
+    const data = rows.map(r => ({ x: [r[2], r[3]], y: r[0], s: r[1] }));
+    const labelPlugin = { id: 'lbl', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '11px Golos Text, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ch.getDatasetMeta(0).data.forEach((bar, i) => { const w = Math.abs(bar.width ?? (bar.x - bar.base)); const txt = data[i].s; if (w > ctx.measureText(txt).width + 6) { ctx.fillStyle = '#fff'; ctx.fillText(txt, (bar.x + bar.base) / 2, bar.y); } }); ctx.restore(); } };
+    chart('g', { type: 'bar', data: { labels: objs, datasets: [{ label: 'интервалы', data, backgroundColor: data.map(d => colOf(d.s)), borderSkipped: false, borderRadius: 3, barPercentage: .7, categoryPercentage: .9 }] }, plugins: [labelPlugin], options: { indexAxis: 'y', parsing: { xAxisKey: 'x', yAxisKey: 'y' }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.raw.s}: ${fmtS(c.raw.x[0], 2)} – ${fmtS(c.raw.x[1], 2)}` } } }, scales: { x: { beginAtZero: true, title: { text: 'время' } }, y: { grid: { display: false } } } } });
+    const ints = rows.filter(r => isFinite(r[2]) && isFinite(r[3])); if (!ints.length) { $('#tab').innerHTML = ''; return; }
+    const tmin = Math.min(...ints.map(r => r[2])), tmax = Math.max(...ints.map(r => r[3])); const ev = new Set(); ints.forEach(r => { ev.add(r[2]); ev.add(r[3]); });
+    const waits = ints.filter(r => /ожид|очеред/i.test(r[1])); const idle = ints.filter(r => /прост/i.test(r[1]));
+    const longest = ints.reduce((a, r) => (r[3] - r[2] > a[3] - a[2] ? r : a));
+    const maxW = waits.length ? waits.reduce((a, r) => (r[3] - r[2] > a[3] - a[2] ? r : a)) : null;
+    $('#tab').innerHTML = `<table><tr><th>Показатель</th><th>Значение</th></tr>
+      <tr><td>Общая длительность процесса</td><td class="num">${fmtS(tmax - tmin, 2)}</td></tr><tr><td>Количество событий</td><td class="num">${ev.size}</td></tr><tr><td>Количество интервалов</td><td class="num">${ints.length}</td></tr>
+      <tr><td>Максимальное время ожидания</td><td class="num">${maxW ? fmtS(maxW[3] - maxW[2], 2) + ' (' + esc(maxW[0]) + ')' : '—'}</td></tr><tr><td>Суммарный простой ресурса</td><td class="num">${fmtS(sum(idle.map(r => r[3] - r[2])), 2)}</td></tr>
+      <tr><td>Критический участок диаграммы</td><td>${esc(longest[0])}: ${esc(longest[1])}, ${fmtS(longest[2], 2)} – ${fmtS(longest[3], 2)}</td></tr></table>`;
+  }
+  redraw = draw; setV();
+}
+
+/* ============================================================ PR8 */
+function pr8() {
+  const p = PR[7];
+  $('#view').innerHTML = page(p, `
+    <label class="f"><span>Вариант (таблица 1)</span><select id="v">${variantOptions(20)}</select></label>
+    <div class="task" id="sys"></div>
+    <div class="grid2"><label class="f"><span>Уровней фактора k</span><input id="k" type="number" min="2" max="6" value="4"></label>
+    <label class="f"><span>Повторов r</span><input id="r" type="number" min="2" max="8" value="4"></label></div>
+    <label class="f"><span>Уровень значимости α</span><select id="al"><option value="0.05">0,05</option><option value="0.01">0,01</option><option value="0.1">0,10</option></select></label>
+    <div class="btns"><button class="primary" id="run">Рассчитать ANOVA</button><button id="rnd">Случайные данные</button><button id="ex">Пример из МУ</button></div>
+    <p class="small">Введите измеренные значения отклика в таблицу исходных данных. Кнопка «Случайные данные» заполняет её учебным примером с влиянием фактора.</p>`,
+    `<div class="panel"><h2>Таблица исходных данных</h2><div class="tbl" id="ed"></div></div>
+     <div class="row2"><div class="panel"><h2>Таблица ANOVA</h2><div class="tbl" id="an"></div><div class="concl" id="concl"></div></div>
+     <div class="panel"><h3>Значения и групповые средние</h3><div class="chart"><canvas id="dots"></canvas></div></div></div>`);
+  let M = [];
+  const setV = () => { const [f, y] = V8[+$('#v').value]; $('#sys').innerHTML = `Фактор: <b>${esc(f)}</b><br>Отклик: <b>${esc(y)}</b>`; };
+  $('#v').onchange = () => { setV(); random(+$('#v').value + 1); };
+  $('#run').onclick = () => { read(); calc(); }; $('#al').onchange = () => { read(); calc(); };
+  $('#k').onchange = $('#r').onchange = () => { read(); resize(); edit(); calc(); };
+  $('#rnd').onclick = () => random(Math.floor(Math.random() * 1e6));
+  $('#ex').onclick = () => { $('#k').value = 3; $('#r').value = 4; M = [[72, 75, 70, 74], [80, 83, 79, 82], [77, 76, 78, 75]]; edit(); calc(); };
+  function resize() { const k = +$('#k').value, r = +$('#r').value; M = Array.from({ length: k }, (_, i) => Array.from({ length: r }, (_, j) => (M[i] && M[i][j] !== undefined) ? M[i][j] : '')); }
+  function random(seed) { const rg = mulberry32(seed), k = +$('#k').value, r = +$('#r').value; const base = 50 + Math.round(rg() * 50); const eff = Array.from({ length: k }, () => (rg() - .5) * 12);
+    M = eff.map(e => Array.from({ length: r }, () => { const z = Math.sqrt(-2 * Math.log(1 - rg())) * Math.cos(2 * Math.PI * rg()); return Math.round((base + e + z * 2.5) * 10) / 10; })); edit(); calc(); }
+  function edit() { const r = M[0]?.length || 0;
+    $('#ed').innerHTML = `<table class="editor"><tr><th>Уровень фактора</th>${Array.from({ length: r }, (_, j) => `<th>Повтор ${j + 1}</th>`).join('')}<th class="num">Среднее</th></tr>${M.map((row, i) => `<tr><th>Уровень ${i + 1}</th>${row.map((v, j) => `<td><input id="y${i}_${j}" type="number" step="any" value="${v}"></td>`).join('')}<td class="num" id="mean${i}"></td></tr>`).join('')}</table>`;
+    M.forEach((row, i) => row.forEach((_, j) => $(`#y${i}_${j}`).onchange = () => { read(); calc(); })); }
+  function read() { M = M.map((row, i) => row.map((_, j) => { const el = $(`#y${i}_${j}`); return el ? parseFloat(el.value) : NaN; })); }
+  function calc() {
+    const g = M.map(r => r.filter(v => isFinite(v))); if (g.some(x => x.length < 2)) { $('#concl').textContent = 'В каждой группе нужно не меньше двух значений.'; return; }
+    const all = g.flat(), N = all.length, k = g.length, gm = mean(all), means = g.map(mean);
+    means.forEach((m, i) => { const c = $('#mean' + i); if (c) c.textContent = fmt(m, 3); });
+    const SSf = sum(g.map((x, i) => x.length * (means[i] - gm) ** 2)), SSe = sum(g.map((x, i) => sum(x.map(v => (v - means[i]) ** 2)))), SSt = SSf + SSe;
+    const d1 = k - 1, d2 = N - k, MSf = SSf / d1, MSe = SSe / d2, F = MSf / MSe, a = +$('#al').value, Fc = fCrit(a, d1, d2), pv = 1 - fCdf(F, d1, d2);
+    $('#an').innerHTML = `<table><tr><th>Источник изменчивости</th><th class="num">SS</th><th class="num">df</th><th class="num">MS</th><th class="num">F</th></tr>
+      <tr><td>Фактор</td><td class="num">${fmt(SSf, 3)}</td><td class="num">${d1}</td><td class="num">${fmt(MSf, 3)}</td><td class="num">${fmt(F, 3)}</td></tr>
+      <tr><td>Ошибка</td><td class="num">${fmt(SSe, 3)}</td><td class="num">${d2}</td><td class="num">${fmt(MSe, 3)}</td><td></td></tr>
+      <tr><td>Итого</td><td class="num">${fmt(SSt, 3)}</td><td class="num">${N - 1}</td><td></td><td></td></tr></table>
+      <p class="small">F<sub>кр</sub>(α = ${fmtS(a)}; ${d1}; ${d2}) = ${fmt(Fc, 3)}, p-value = ${fmt(pv, 4)}, доля влияния фактора η² = SSфакт / SSобщ = ${fmt(SSf / SSt, 3)}.</p>`;
+    const sig = F > Fc; const [f, y] = V8[+$('#v').value];
+    $('#concl').innerHTML = `<span class="pill ${sig ? 'good' : 'warn'}">${sig ? 'влияние значимо' : 'влияние не доказано'}</span> F = ${fmt(F, 2)} ${sig ? '>' : '≤'} F<sub>кр</sub> = ${fmt(Fc, 2)}: ${sig ? `фактор «${esc(f)}» статистически значимо влияет на отклик «${esc(y)}» на уровне α = ${fmtS(a)}. Наибольшее среднее — на уровне ${means.indexOf(Math.max(...means)) + 1}.` : `различия средних отклика «${esc(y)}» по уровням фактора «${esc(f)}» можно объяснить случайным разбросом.`}`;
+    const P = palette();
+    chart('dots', { type: 'scatter', data: { datasets: [{ label: 'наблюдения', data: g.flatMap((x, i) => x.map((v, j) => ({ x: i + 1 + (j - (x.length - 1) / 2) * .06, y: v }))), backgroundColor: hexA(P.c[0], .65), pointRadius: 4 },
+      { label: 'среднее уровня', data: means.map((m, i) => ({ x: i + 1, y: m })), backgroundColor: P.c[1], borderColor: P.c[1], pointRadius: 9, pointStyle: 'line', borderWidth: 3 },
+      { label: 'общее среднее', data: [{ x: .5, y: gm }, { x: k + .5, y: gm }], showLine: true, borderColor: P.muted, borderDash: [5, 4], pointRadius: 0, borderWidth: 1.5 }] },
+      options: { scales: { x: { min: .5, max: k + .5, ticks: { stepSize: 1, callback: v => Number.isInteger(v) ? `Уровень ${v}` : '' }, title: { text: f } }, y: { title: { text: y } } } } });
+  }
+  redraw = () => { read(); calc(); }; setV(); random(1);
+}
+
+/* ============================================================ home & routing */
+function home() {
+  $('#view').innerHTML = `<div class="eyebrow">Моделирование информационных процессов и систем</div>
+    <h1>Модели к практическим работам</h1>
+    <p class="lead">Выберите практическую работу, укажите номер своего варианта из методических указаний и сравните результаты модели с собственными расчётами. Все модели работают в браузере, исходные данные вариантов взяты из МУ.</p>
+    <div class="cards">${PR.map((p, i) => `<a class="card" href="#${p.id}"><span class="no">ПР № ${p.no}</span><span class="t">${p.t}</span><span class="d">${p.d}</span><canvas id="mini${i}" aria-hidden="true"></canvas></a>`).join('')}</div>
+    <p class="note">Генератор случайных чисел здесь свой (mulberry32), поэтому при том же seed значения не совпадут с NumPy побитно. Статистические выводы при этом те же: используйте модель для проверки порядка величин и характера графиков.</p>`;
+  PR.forEach((_, i) => mini(i));
+}
+function mini(i) { // small signature sketch per card
+  const cv = $('#mini' + i); const dpr = devicePixelRatio || 1; const w = cv.clientWidth, h = cv.clientHeight; cv.width = w * dpr; cv.height = h * dpr; const c = cv.getContext('2d'); c.scale(dpr, dpr); const P = palette(); const r = mulberry32(i + 3); c.lineWidth = 1.6;
+  const col = P.c[i % 5];
+  if (i === 0) { c.fillStyle = col; for (let k = 0; k < 160; k++) c.fillRect(r() * w, r() * h, 1.8, 1.8); }
+  else if (i === 1 || i === 2) { const n = 18; for (let k = 0; k < n; k++) { const x = k / n; const v = i === 1 ? Math.exp(-3 * x) : Math.exp(-((x - .5) ** 2) / .03); c.fillStyle = hexA(col, .75); c.fillRect(k * w / n + 1, h - v * (h - 6), w / n - 2, v * (h - 6)); } }
+  else if (i === 3 || i === 4) { const pts = [[w * .2, h * .5], [w * .5, h * .3], [w * .8, h * .6]]; c.strokeStyle = P.muted; c.beginPath(); c.moveTo(...pts[0]); c.quadraticCurveTo(w * .35, 0, ...pts[1]); c.quadraticCurveTo(w * .7, h, ...pts[2]); c.quadraticCurveTo(w * .5, h * 1.1, ...pts[0]); c.stroke(); pts.forEach((p, k) => { c.fillStyle = P.paper; c.strokeStyle = P.c[k]; c.beginPath(); c.arc(p[0], p[1], 9, 0, 7); c.fill(); c.stroke(); }); }
+  else if (i === 5) { c.strokeStyle = col; c.beginPath(); let y = h - 4, x = 0; c.moveTo(0, y); while (x < w) { x += r() * 14; c.lineTo(x, y); y = Math.max(6, Math.min(h - 4, y + (r() < .52 ? -7 : 7))); c.lineTo(x, y); } c.stroke(); }
+  else if (i === 6) { [[0, .1, .35], [1, .3, .7], [2, .5, .95]].forEach(([k, a, b]) => { c.fillStyle = hexA(P.c[k], .85); c.fillRect(a * w, 6 + k * 19, (b - a) * w, 13); }); }
+  else { [[.3, .45], [.6, .3], [.45, .6]].forEach(([y, s], k) => { for (let j = 0; j < 4; j++) { c.fillStyle = hexA(P.c[k], .7); c.beginPath(); c.arc(w * (.25 + k * .25) + (j - 1.5) * 5, h * (y + (r() - .5) * s * .4), 3, 0, 7); c.fill(); } c.strokeStyle = P.c[k]; c.beginPath(); c.moveTo(w * (.25 + k * .25) - 14, h * y); c.lineTo(w * (.25 + k * .25) + 14, h * y); c.stroke(); }); }
+}
+const ROUTES = { pr1, pr2, pr3, pr4, pr5, pr6, pr7, pr8 };
+function route() {
+  Object.values(charts).forEach(c => c.destroy()); for (const k in charts) delete charts[k];
+  const h = location.hash.slice(1);
+  $('#nav').innerHTML = PR.map(p => `<a href="#${p.id}" class="${p.id === h ? 'on' : ''}">ПР ${p.no}</a>`).join('');
+  redraw = null; (ROUTES[h] || home)(); window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+// re-draw in the new theme
+let redraw = null;
+const rerender = () => { const h = location.hash.slice(1); if (!ROUTES[h]) { PR.forEach((_, i) => $('#mini' + i) && mini(i)); return; } if (redraw) redraw(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rerender);
+new MutationObserver(rerender).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+route();
+</script>
+
+</body>
+</html>
